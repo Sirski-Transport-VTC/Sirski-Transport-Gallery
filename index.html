@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sirski Transport Gallery | ETS2 VTC Trucks</title>
+<meta name="description" content="Sirski Transport VTC standalone truck gallery featuring Euro Truck Simulator 2 trucks, fleet screenshots and convoy moments.">
+<meta name="robots" content="index, follow">
+<style>
+:root{--yellow:#f5c400;--black:#070707;--panel:#171717;--line:rgba(245,196,0,.28);--text:#f5f5f5;--muted:#aaa}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 50% 0%,rgba(245,196,0,.09),transparent 38%),var(--black);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+header{position:sticky;top:0;z-index:10;background:rgba(7,7,7,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.nav{max-width:1200px;margin:auto;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.brand{color:white;text-decoration:none;font-weight:900;letter-spacing:1px;text-transform:uppercase}.brand span{color:var(--yellow)}
+.main-site{color:var(--yellow);border:1px solid var(--yellow);border-radius:7px;padding:9px 13px;text-decoration:none;font-size:13px;font-weight:700}
+.main-site:hover{background:var(--yellow);color:#000}
+.hero{max-width:1100px;margin:auto;padding:75px 20px 45px;text-align:center}.eyebrow{color:var(--yellow);font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+h1{margin:0;font-size:clamp(38px,8vw,72px);line-height:.98;text-transform:uppercase}.hero p{max-width:720px;margin:20px auto 0;color:var(--muted);line-height:1.7;font-size:16px}.accent{width:85px;height:4px;background:var(--yellow);margin:25px auto 0;border-radius:20px}
+.gallery{max-width:1200px;margin:auto;padding:10px 20px 75px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.card{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.38)}
+.card button{display:block;width:100%;padding:0;margin:0;border:0;background:#222;cursor:pointer}.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform .25s ease}.card button:hover img{transform:scale(1.025)}
+figcaption{padding:15px 16px 18px}.title{margin:0 0 7px;color:var(--yellow);font-size:18px;font-weight:800}.description{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+footer{border-top:1px solid rgba(255,255,255,.08);text-align:center;padding:28px 20px 40px;color:#777;font-size:13px}footer strong{color:var(--yellow)}
+.lightbox{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.94)}.lightbox.open{display:flex}.lightbox img{max-width:96vw;max-height:88vh;object-fit:contain;border-radius:6px}.close{position:fixed;top:18px;right:20px;width:44px;height:44px;border:1px solid var(--yellow);border-radius:50%;background:#111;color:var(--yellow);font-size:27px;cursor:pointer}
+@media(max-width:760px){.gallery{grid-template-columns:1fr;padding-left:14px;padding-right:14px}.hero{padding:55px 16px 35px}.hero p{font-size:15px}.nav{padding:12px 14px}.brand{font-size:14px}.main-site{font-size:11px;padding:8px 10px}}
+</style>
+</head>
+<body>
+<header><nav class="nav">
+<a class="brand" href="./">Sirski <span>Transport</span></a>
+<a class="main-site" href="https://sirski-transport.com/" target="_blank" rel="noopener">Main Website ↗</a>
+</nav></header>
+
+<main>
+<section class="hero">
+<div class="eyebrow">Sirski Transport VTC</div>
+<h1>Truck Gallery</h1>
+<p>Explore Sirski Transport trucks, fleet screenshots and convoy moments from Euro Truck Simulator 2.</p>
+<div class="accent"></div>
+</section>
+
+<section class="gallery" aria-label="Sirski Transport truck gallery">
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-01.jpg','Sirski Transport truck')">
+<img src="gallery/truck-01.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Transport Truck</h2><p class="description">Sirski Transport VTC truck screenshot from Euro Truck Simulator 2.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-02.jpg','Sirski Transport truck')">
+<img src="gallery/truck-02.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Scania</h2><p class="description">Sirski Transport Scania build and VTC branding.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-03.jpg','Sirski Transport truck')">
+<img src="gallery/truck-03.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Transport Fleet</h2><p class="description">A Sirski Transport fleet lined up for a convoy.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-04.jpg','Sirski Transport truck')">
+<img src="gallery/truck-04.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Volvo & Scania</h2><p class="description">Sirski Transport trucks together during an ETS2 session.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-05.jpg','Sirski Transport truck')">
+<img src="gallery/truck-05.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Volvo</h2><p class="description">Sirski Transport Volvo truck screenshot.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-06.jpg','Sirski Transport truck')">
+<img src="gallery/truck-06.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Convoy</h2><p class="description">Sirski Transport trucks preparing for the road.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-07.jpg','Sirski Transport truck')">
+<img src="gallery/truck-07.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Volvo 750</h2><p class="description">A detailed Volvo build from the Sirski Transport fleet.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-08.jpg','Sirski Transport truck')">
+<img src="gallery/truck-08.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Convoy Lineup</h2><p class="description">Sirski Transport trucks gathered for a convoy.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-09.jpg','Sirski Transport truck')">
+<img src="gallery/truck-09.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Black & Gold Fleet</h2><p class="description">Sirski Transport black-and-gold fleet design.</p></figcaption>
+</figure>
+
+
+<figure class="card">
+<button type="button" onclick="openImage('gallery/truck-10.jpg','Sirski Transport truck')">
+<img src="gallery/truck-10.jpg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
+</button>
+<figcaption><h2 class="title">Sirski Transport Convoy</h2><p class="description">Another Sirski Transport convoy moment from ETS2.</p></figcaption>
+</figure>
+
+</section>
+</main>
+
+<footer><strong>Sirski Transport</strong> — Driven by Passion. Built on Trust.<br>Independent Project 2 — Standalone Truck Gallery</footer>
+
+<div class="lightbox" id="lightbox" onclick="closeImage(event)">
+<button class="close" type="button" aria-label="Close image">×</button>
+<img id="lightboxImage" src="" alt="">
+</div>
+
+<script>
+function openImage(src,alt){const b=document.getElementById('lightbox');const i=document.getElementById('lightboxImage');i.src=src;i.alt=alt;b.classList.add('open');document.body.style.overflow='hidden'}
+function closeImage(e){if(e.target.id==='lightbox'||e.target.classList.contains('close')){const b=document.getElementById('lightbox');b.classList.remove('open');document.getElementById('lightboxImage').src='';document.body.style.overflow=''}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const b=document.getElementById('lightbox');b.classList.remove('open');document.getElementById('lightboxImage').src='';document.body.style.overflow=''}})
+</script>
+</body>
+</html>
