@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sirski Transport — Gallery Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.96)),
+        url("truck01.jpeg") center/cover fixed;
+      color: white;
+      padding: 25px 15px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .header {
+      background: rgba(15,15,15,0.97);
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+    }
+
+    h1 {
+      margin: 10px 0 5px;
+    }
+
+    .subtitle {
+      color: #aaa;
+    }
+
+    .admin-badge {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: #b00020;
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .refresh {
+      background: #f5c400;
+      color: #111;
+    }
+
+    .logout {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .back {
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .submission {
+      background: rgba(15,15,15,0.97);
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .submission-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 420px) 1fr;
+      gap: 25px;
+    }
+
+    .image-container {
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .submission-image {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+    }
+
+    .details h2 {
+      margin-top: 0;
+      color: #f5c400;
+    }
+
+    .detail {
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .label {
+      color: #888;
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .value {
+      color: #eee;
+      margin-top: 3px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .pending {
+      background: #6d5300;
+      color: #ffd633;
+    }
+
+    .approved {
+      background: #145c2a;
+      color: #7dff9a;
+    }
+
+    .rejected {
+      background: #6b1820;
+      color: #ff8995;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .approve {
+      background: #198754;
+      color: white;
+    }
+
+    .reject {
+      background: #b00020;
+      color: white;
+    }
+
+    .delete {
+      background: #333;
+      color: #ff8995;
+      border: 1px solid #666;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #message {
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      display: block !important;
+      background: rgba(40,167,69,0.2);
+      color: #7dff9a;
+      border: 1px solid #2e8b46;
+    }
+
+    .error {
+      display: block !important;
+      background: rgba(220,53,69,0.2);
+      color: #ff8995;
+      border: 1px solid #a52a36;
+    }
+
+    .empty {
+      text-align: center;
+      background: rgba(15,15,15,0.97);
+      border: 1px solid #333;
+      border-radius: 14px;
+      padding: 40px 20px;
+      color: #aaa;
+    }
+
+    .loading {
+      text-align: center;
+      color: #aaa;
+      padding: 40px;
+    }
+
+    @media (max-width: 750px) {
+
+      .submission-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .submission-image {
+        max-height: 300px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+
+    <img
+      src="Sirski_Transport_Logo.png"
+      alt="Sirski Transport Logo"
+      class="logo"
+    >
+
+    <h1>Sirski Transport VTC</h1>
+
+    <div class="subtitle">
+      Gallery Administration
+    </div>
+
+    <div class="admin-badge">
+      PROJECT 2 ADMIN
+    </div>
+
+  </div>
+
+
+  <div class="toolbar">
+
+    <button
+      class="refresh"
+      id="refreshButton"
+    >
+      Refresh Submissions
+    </button>
+
+    <button
+      class="back"
+      onclick="window.location.href='index.html'"
+    >
+      Gallery
+    </button>
+
+    <button
+      class="logout"
+      id="logoutButton"
+    >
+      Log Out
+    </button>
+
+  </div>
+
+
+  <div id="message"></div>
+
+  <div id="submissions">
+
+    <div class="loading">
+      Loading submissions...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://siedpigixmtmmihdsqpj.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+
+  const { createClient } = supabase;
+
+  const client =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  const submissions =
+    document.getElementById("submissions");
+
+  const message =
+    document.getElementById("message");
+
+  const refreshButton =
+    document.getElementById("refreshButton");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+
+  function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = type;
+
+  }
+
+
+  function clearMessage() {
+
+    message.textContent = "";
+
+    message.className = "";
+
+  }
+
+
+  async function checkAdmin() {
+
+    const {
+      data: {
+        session
+      }
+    } = await client.auth.getSession();
+
+
+    if (!session) {
+
+      window.location.href =
+        "login.html";
+
+      return false;
+
+    }
+
+
+    const {
+      data,
+      error
+    } = await client
+      .from("gallery_admins")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+
+    if (error || !data) {
+
+      document.body.innerHTML = `
+        <div style="
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:20px;
+          text-align:center;
+          font-family:Arial;
+          background:#111;
+          color:white;
+        ">
+          <div>
+            <h1>Access Denied</h1>
+            <p>You are not authorized to access the Project 2 Admin Dashboard.</p>
+            <a href="index.html"
+               style="color:#f5c400;">
+              Return to Gallery
+            </a>
+          </div>
+        </div>
+      `;
+
+      return false;
+
+    }
+
+
+    return true;
+
+  }
+
+
+  async function loadSubmissions() {
+
+    clearMessage();
+
+    submissions.innerHTML =
+      '<div class="loading">Loading submissions...</div>';
+
+
+    const {
+      data,
+      error
+    } = await client
+      .from("gallery_submissions")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+
+    if (error) {
+
+      submissions.innerHTML = "";
+
+      showMessage(
+        "Unable to load submissions: " +
+        error.message,
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (!data || data.length === 0) {
+
+      submissions.innerHTML = `
+        <div class="empty">
+          <h2>No submissions yet</h2>
+          <p>There are currently no gallery submissions.</p>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    submissions.innerHTML = "";
+
+
+    for (const submission of data) {
+
+      await renderSubmission(submission);
+
+    }
+
+  }
+
+
+  async function renderSubmission(submission) {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "submission";
+
+
+    const grid =
+      document.createElement("div");
+
+    grid.className =
+      "submission-grid";
+
+
+    const imageContainer =
+      document.createElement("div");
+
+    imageContainer.className =
+      "image-container";
+
+
+    const image =
+      document.createElement("img");
+
+    image.className =
+      "submission-image";
+
+    image.alt =
+      submission.title;
+
+
+    /*
+      Create a temporary signed URL
+      because the bucket is PRIVATE.
+    */
+
+    const {
+      data: signedData,
+      error: signedError
+    } =
+      await client.storage
+        .from("gallery-submissions")
+        .createSignedUrl(
+          submission.file_path,
+          3600
+        );
+
+
+    if (!signedError && signedData) {
+
+      image.src =
+        signedData.signedUrl;
+
+    } else {
+
+      image.alt =
+        "Unable to load submitted image";
+
+      image.style.padding =
+        "30px";
+
+    }
+
+
+    imageContainer.appendChild(image);
+
+
+    const details =
+      document.createElement("div");
+
+    details.className =
+      "details";
+
+
+    const title =
+      document.createElement("h2");
+
+    title.textContent =
+      submission.title;
+
+
+    details.appendChild(title);
+
+
+    details.innerHTML += `
+      <div class="detail">
+        <div class="label">Uploader</div>
+        <div class="value">
+          ${escapeHtml(submission.uploader_name)}
+        </div>
+      </div>
+
+      <div class="detail">
+        <div class="label">Description</div>
+        <div class="value">
+          ${escapeHtml(
+            submission.description || "No description"
+          )}
+        </div>
+      </div>
+
+      <div class="detail">
+        <div class="label">Submitted</div>
+        <div class="value">
+          ${new Date(
+            submission.created_at
+          ).toLocaleString()}
+        </div>
+      </div>
+
+      <div class="detail">
+        <div class="label">Status</div>
+        <div class="value">
+          <span class="status ${submission.status}">
+            ${submission.status}
+          </span>
+        </div>
+      </div>
+    `;
+
+
+    const actions =
+      document.createElement("div");
+
+    actions.className =
+      "actions";
+
+
+    if (submission.status === "pending") {
+
+      const approve =
+        document.createElement("button");
+
+      approve.className =
+        "approve";
+
+      approve.textContent =
+        "Approve";
+
+      approve.onclick =
+        () => updateStatus(
+          submission.id,
+          "approved"
+        );
+
+
+      const reject =
+        document.createElement("button");
+
+      reject.className =
+        "reject";
+
+      reject.textContent =
+        "Reject";
+
+      reject.onclick =
+        () => updateStatus(
+          submission.id,
+          "rejected"
+        );
+
+
+      actions.appendChild(approve);
+
+      actions.appendChild(reject);
+
+    }
+
+
+    grid.appendChild(imageContainer);
+
+    grid.appendChild(details);
+
+    details.appendChild(actions);
+
+    card.appendChild(grid);
+
+    submissions.appendChild(card);
+
+  }
+
+
+  async function updateStatus(id, status) {
+
+    const action =
+      status === "approved"
+        ? "approve"
+        : "reject";
+
+
+    if (
+      !confirm(
+        "Are you sure you want to " +
+        action +
+        " this screenshot?"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    const {
+      error
+    } =
+      await client
+        .from("gallery_submissions")
+        .update({
+
+          status:
+            status,
+
+          reviewed_at:
+            new Date().toISOString()
+
+        })
+        .eq("id", id);
+
+
+    if (error) {
+
+      showMessage(
+        "Unable to update submission: " +
+        error.message,
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "Submission " +
+      status +
+      " successfully.",
+      "success"
+    );
+
+
+    await loadSubmissions();
+
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  refreshButton.addEventListener(
+    "click",
+    loadSubmissions
+  );
+
+
+  logoutButton.addEventListener(
+    "click",
+    async function() {
+
+      await client.auth.signOut();
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+
+  async function start() {
+
+    const isAdmin =
+      await checkAdmin();
+
+
+    if (isAdmin) {
+
+      await loadSubmissions();
+
+    }
+
+  }
+
+
+  start();
+
+</script>
+
+</body>
+</html>
