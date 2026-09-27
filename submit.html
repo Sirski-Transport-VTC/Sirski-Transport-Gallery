@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sirski Transport — Submit Screenshot</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(rgba(0,0,0,0.84), rgba(0,0,0,0.94)),
+        url("truck01.jpeg") center/cover fixed;
+      color: white;
+      padding: 30px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .box {
+      background: rgba(15,15,15,0.97);
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 35px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    .logo {
+      display: block;
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      margin: 0 auto 15px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 5px 0;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 30px;
+    }
+
+    .member-box {
+      background: #1c1c1c;
+      border: 1px solid #3b3b3b;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+
+    .member-label {
+      color: #999;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .member-name {
+      color: #f5c400;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 7px;
+      font-weight: bold;
+      color: #ddd;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: white;
+      font-size: 15px;
+      outline: none;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #f5c400;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 11px;
+    }
+
+    .file-note {
+      margin-top: 7px;
+      color: #888;
+      font-size: 12px;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      margin-top: 18px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      background: #000;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 22px;
+      border: none;
+      border-radius: 8px;
+      background: #f5c400;
+      color: #111;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ffd633;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .logout {
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .logout:hover {
+      background: #333;
+    }
+
+    #message {
+      display: none;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .success {
+      background: rgba(40,167,69,0.2);
+      color: #7dff9a;
+      border: 1px solid #2e8b46;
+    }
+
+    .error {
+      background: rgba(220,53,69,0.2);
+      color: #ff8995;
+      border: 1px solid #a52a36;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 25px;
+      color: #f5c400;
+      text-decoration: none;
+    }
+
+    .back:hover {
+      text-decoration: underline;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      text-align: center;
+      color: #aaa;
+      padding: 30px;
+    }
+
+    @media (max-width: 600px) {
+      .box {
+        padding: 25px 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="box" id="mainBox">
+
+    <img
+      src="Sirski_Transport_Logo.png"
+      alt="Sirski Transport Logo"
+      class="logo"
+    >
+
+    <h1>Sirski Transport VTC</h1>
+
+    <div class="subtitle">
+      Submit Your Screenshot
+    </div>
+
+    <div id="loading" class="loading">
+      Checking member account...
+    </div>
+
+
+    <div id="content" class="hidden">
+
+      <div class="member-box">
+
+        <div class="member-label">
+          SUBMITTING AS
+        </div>
+
+        <div class="member-name" id="memberName">
+          Loading...
+        </div>
+
+      </div>
+
+
+      <form id="submitForm">
+
+        <label for="title">
+          Screenshot Title
+        </label>
+
+        <input
+          type="text"
+          id="title"
+          placeholder="Example: Sirski Convoy in Germany"
+          maxlength="100"
+          required
+        >
+
+
+        <label for="description">
+          Description
+          <span style="color:#777;font-weight:normal;">
+            (optional)
+          </span>
+        </label>
+
+        <textarea
+          id="description"
+          placeholder="Tell us something about this screenshot..."
+          maxlength="500"
+        ></textarea>
+
+
+        <label for="screenshot">
+          Truck Screenshot
+        </label>
+
+        <input
+          type="file"
+          id="screenshot"
+          accept="image/jpeg,image/png,image/webp"
+          required
+        >
+
+        <div class="file-note">
+          JPG, PNG or WebP — maximum 10 MB.
+        </div>
+
+
+        <img
+          id="preview"
+          alt="Screenshot preview"
+        >
+
+
+        <button
+          type="submit"
+          id="submitButton"
+        >
+          Submit Screenshot
+        </button>
+
+      </form>
+
+
+      <div id="message"></div>
+
+
+      <button
+        type="button"
+        class="logout"
+        id="logoutButton"
+      >
+        Log Out
+      </button>
+
+
+      <a href="index.html" class="back">
+        ← Back to Gallery
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://siedpigixmtmmihdsqpj.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+
+  const { createClient } = supabase;
+
+  const client =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  const loading =
+    document.getElementById("loading");
+
+  const content =
+    document.getElementById("content");
+
+  const memberName =
+    document.getElementById("memberName");
+
+  const submitForm =
+    document.getElementById("submitForm");
+
+  const screenshotInput =
+    document.getElementById("screenshot");
+
+  const preview =
+    document.getElementById("preview");
+
+  const submitButton =
+    document.getElementById("submitButton");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+  const message =
+    document.getElementById("message");
+
+
+  let currentUser = null;
+
+  let currentSirskiName = null;
+
+
+  function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = type;
+
+    message.style.display = "block";
+  }
+
+
+  function hideMessage() {
+
+    message.textContent = "";
+
+    message.style.display = "none";
+
+    message.className = "";
+  }
+
+
+  async function loadMember() {
+
+    const {
+      data: {
+        session
+      }
+    } = await client.auth.getSession();
+
+
+    if (!session) {
+
+      window.location.href = "login.html";
+
+      return;
+    }
+
+
+    currentUser = session.user;
+
+
+    const {
+      data: profile,
+      error
+    } = await client
+      .from("member_profiles")
+      .select("sirski_name")
+      .eq("id", currentUser.id)
+      .single();
+
+
+    if (error || !profile) {
+
+      loading.innerHTML =
+        "Your Sirski Driver Name profile could not be found.<br><br>" +
+        "Please contact the Sirski Transport administrator.";
+
+      return;
+    }
+
+
+    currentSirskiName =
+      profile.sirski_name;
+
+
+    memberName.textContent =
+      currentSirskiName;
+
+
+    loading.classList.add("hidden");
+
+    content.classList.remove("hidden");
+
+  }
+
+
+  screenshotInput.addEventListener(
+    "change",
+    function() {
+
+      const file =
+        screenshotInput.files[0];
+
+
+      if (!file) {
+
+        preview.style.display = "none";
+
+        return;
+      }
+
+
+      if (file.size > 10 * 1024 * 1024) {
+
+        showMessage(
+          "The screenshot is larger than 10 MB.",
+          "error"
+        );
+
+        screenshotInput.value = "";
+
+        preview.style.display = "none";
+
+        return;
+      }
+
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ];
+
+
+      if (!allowedTypes.includes(file.type)) {
+
+        showMessage(
+          "Please select a JPG, PNG or WebP image.",
+          "error"
+        );
+
+        screenshotInput.value = "";
+
+        preview.style.display = "none";
+
+        return;
+      }
+
+
+      hideMessage();
+
+
+      const objectUrl =
+        URL.createObjectURL(file);
+
+
+      preview.src =
+        objectUrl;
+
+      preview.style.display =
+        "block";
+
+    }
+  );
+
+
+  submitForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      hideMessage();
+
+
+      const title =
+        document
+          .getElementById("title")
+          .value
+          .trim();
+
+      const description =
+        document
+          .getElementById("description")
+          .value
+          .trim();
+
+      const file =
+        screenshotInput.files[0];
+
+
+      if (!file) {
+
+        showMessage(
+          "Please select a screenshot.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!currentUser || !currentSirskiName) {
+
+        showMessage(
+          "Your member session could not be verified.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      submitButton.disabled =
+        true;
+
+      submitButton.textContent =
+        "Uploading...";
+
+
+      try {
+
+        /*
+          Create a unique filename.
+
+          Files are stored inside the member's
+          own User ID folder.
+        */
+
+        const extension =
+          file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+
+        const uniqueName =
+          Date.now() +
+          "-" +
+          crypto.randomUUID() +
+          "." +
+          extension;
+
+
+        const filePath =
+          currentUser.id +
+          "/" +
+          uniqueName;
+
+
+        /*
+          Upload to the PRIVATE
+          gallery-submissions bucket.
+        */
+
+        const {
+          error: uploadError
+        } =
+          await client.storage
+            .from("gallery-submissions")
+            .upload(
+              filePath,
+              file,
+              {
+                cacheControl: "3600",
+                upsert: false,
+                contentType: file.type
+              }
+            );
+
+
+        if (uploadError) {
+
+          throw new Error(
+            "Image upload failed: " +
+            uploadError.message
+          );
+
+        }
+
+
+        /*
+          Create the database submission.
+
+          The uploader's name is taken
+          automatically from member_profiles.
+        */
+
+        const {
+          error: databaseError
+        } =
+          await client
+            .from("gallery_submissions")
+            .insert({
+
+              uploader_id:
+                currentUser.id,
+
+              uploader_name:
+                currentSirskiName,
+
+              title:
+                title,
+
+              description:
+                description || null,
+
+              file_path:
+                filePath,
+
+              status:
+                "pending"
+
+            });
+
+
+        if (databaseError) {
+
+          throw new Error(
+            "Submission record failed: " +
+            databaseError.message
+          );
+
+        }
+
+
+        showMessage(
+          "Screenshot submitted successfully! It is now waiting for admin approval.",
+          "success"
+        );
+
+
+        submitForm.reset();
+
+        preview.style.display =
+          "none";
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+      } finally {
+
+        submitButton.disabled =
+          false;
+
+        submitButton.textContent =
+          "Submit Screenshot";
+
+      }
+
+    }
+  );
+
+
+  logoutButton.addEventListener(
+    "click",
+    async function() {
+
+      await client.auth.signOut();
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+
+  loadMember();
+
+</script>
+
+</body>
+</html>
