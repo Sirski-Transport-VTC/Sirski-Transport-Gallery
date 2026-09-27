@@ -9,8 +9,6 @@
 <meta name="description" content="Sirski Transport VTC standalone truck gallery featuring Euro Truck Simulator 2 trucks, fleet screenshots, member submissions and convoy moments.">
 <meta name="robots" content="index, follow">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 
 :root{
@@ -90,24 +88,6 @@ white-space:nowrap
 .main-site:hover{
 background:var(--yellow);
 color:#000
-}
-
-.member-login{
-color:#070707;
-background:var(--yellow);
-border:1px solid var(--yellow);
-border-radius:7px;
-padding:9px 13px;
-text-decoration:none;
-font-size:13px;
-font-weight:800;
-white-space:nowrap
-}
-
-.member-login:hover{
-background:#fff;
-color:#000;
-border-color:#fff
 }
 
 /* HERO */
@@ -354,7 +334,6 @@ padding:7px 8px
 <span>Sirski Transport VTC</span>
 </a>
 
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
 <a
 class="main-site"
 href="https://sirski-transport.com/"
@@ -363,14 +342,6 @@ rel="noopener"
 >
 Main Website ↗
 </a>
-
-<a
-class="member-login"
-href="login.html"
->
-Member Login
-</a>
-</div>
 
 </nav>
 </header>
@@ -806,7 +777,7 @@ error
 );
 
 status.textContent =
-'Unable to load approved member screenshots right now.';
+'Gallery error: ' + (error && error.message ? error.message : String(error));
 
 }
 
