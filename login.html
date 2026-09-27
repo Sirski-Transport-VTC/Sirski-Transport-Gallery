@@ -29,7 +29,7 @@
 
     .login-container {
       width: 100%;
-      max-width: 430px;
+      max-width: 450px;
     }
 
     .login-box {
@@ -38,29 +38,36 @@
       border-radius: 16px;
       padding: 35px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      text-align: center;
     }
 
     .logo {
+      display: block;
       width: 120px;
       height: 120px;
       object-fit: contain;
-      margin-bottom: 15px;
+      margin: 0 auto 15px;
     }
 
     h1 {
       margin: 5px 0;
+      text-align: center;
       font-size: 28px;
     }
 
     .subtitle {
+      text-align: center;
       color: #aaa;
       margin-bottom: 30px;
     }
 
+    .section-title {
+      color: #f5c400;
+      font-size: 18px;
+      margin: 0 0 15px;
+    }
+
     label {
       display: block;
-      text-align: left;
       margin: 15px 0 7px;
       color: #ddd;
       font-weight: bold;
@@ -109,12 +116,23 @@
       background: #333;
     }
 
+    .hidden {
+      display: none;
+    }
+
+    .divider {
+      height: 1px;
+      background: #333;
+      margin: 28px 0;
+    }
+
     #message {
       margin-top: 18px;
       padding: 10px;
       border-radius: 7px;
       display: none;
       font-size: 14px;
+      line-height: 1.5;
     }
 
     .success {
@@ -130,7 +148,8 @@
     }
 
     .back {
-      display: inline-block;
+      display: block;
+      text-align: center;
       margin-top: 25px;
       color: #f5c400;
       text-decoration: none;
@@ -146,42 +165,56 @@
       color: #777;
       font-size: 12px;
       line-height: 1.5;
+      text-align: center;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="login-container">
+<div class="login-container">
 
-    <div class="login-box">
+  <div class="login-box">
 
-      <img
-        src="Sirski_Transport_Logo.png"
-        alt="Sirski Transport Logo"
-        class="logo"
-      >
+    <img
+      src="Sirski_Transport_Logo.png"
+      alt="Sirski Transport Logo"
+      class="logo"
+    >
 
-      <h1>Sirski Transport VTC</h1>
+    <h1>Sirski Transport VTC</h1>
 
-      <div class="subtitle">
-        Member Login
-      </div>
+    <div class="subtitle">
+      Project 2 — Member Gallery
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <div id="loginSection">
+
+      <h2 class="section-title">Member Login</h2>
 
       <form id="loginForm">
 
-        <label for="email">Email Address</label>
+        <label for="loginEmail">
+          Sirski Transport Email
+        </label>
+
         <input
           type="email"
-          id="email"
-          placeholder="Enter your email"
+          id="loginEmail"
+          placeholder="driver@sirski-transport.com"
           required
         >
 
-        <label for="password">Password</label>
+        <label for="loginPassword">
+          Password
+        </label>
+
         <input
           type="password"
-          id="password"
+          id="loginPassword"
           placeholder="Enter your password"
           required
         >
@@ -195,79 +228,211 @@
       <button
         type="button"
         class="secondary"
-        id="signupButton"
+        id="showSignup"
       >
         Create Member Account
       </button>
 
-      <div id="message"></div>
+    </div>
 
-      <a href="index.html" class="back">
-        ← Back to Gallery
-      </a>
 
-      <div class="small-note">
-        Sirski Transport Gallery — Project 2
-      </div>
+    <!-- REGISTRATION -->
 
+    <div id="signupSection" class="hidden">
+
+      <h2 class="section-title">Create Member Account</h2>
+
+      <form id="signupForm">
+
+        <label for="sirskiName">
+          Sirski Driver Name
+        </label>
+
+        <input
+          type="text"
+          id="sirskiName"
+          placeholder="Example: Jigg Banez"
+          required
+        >
+
+        <label for="signupEmail">
+          Sirski Transport Email
+        </label>
+
+        <input
+          type="email"
+          id="signupEmail"
+          placeholder="driver@sirski-transport.com"
+          required
+        >
+
+        <label for="signupPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="signupPassword"
+          placeholder="Minimum 6 characters"
+          minlength="6"
+          required
+        >
+
+        <button type="submit">
+          Create Member Account
+        </button>
+
+      </form>
+
+      <button
+        type="button"
+        class="secondary"
+        id="showLogin"
+      >
+        ← Back to Member Login
+      </button>
+
+    </div>
+
+
+    <div id="message"></div>
+
+    <div class="divider"></div>
+
+    <a href="index.html" class="back">
+      ← Back to Gallery
+    </a>
+
+    <div class="small-note">
+      Sirski Transport — Driven by Passion. Built on Trust.
+      <br>
+      Independent Project 2 — Standalone Truck Gallery
     </div>
 
   </div>
 
-  <script>
-
-    const SUPABASE_URL =
-      "https://siedpigixmtmmihdsqpj.supabase.co";
-
-    const SUPABASE_PUBLISHABLE_KEY =
-      "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
-
-    const { createClient } =
-      supabase;
-
-    const client =
-      createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
-      );
-
-    const form =
-      document.getElementById("loginForm");
-
-    const signupButton =
-      document.getElementById("signupButton");
-
-    const message =
-      document.getElementById("message");
+</div>
 
 
-    function showMessage(text, type) {
+<script>
 
-      message.textContent = text;
+  const SUPABASE_URL =
+    "https://siedpigixmtmmihdsqpj.supabase.co";
 
-      message.className = type;
-
-      message.style.display = "block";
-    }
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
 
 
-    form.addEventListener("submit", async function(event) {
+  const { createClient } = supabase;
+
+  const client =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  const loginSection =
+    document.getElementById("loginSection");
+
+  const signupSection =
+    document.getElementById("signupSection");
+
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const signupForm =
+    document.getElementById("signupForm");
+
+  const showSignup =
+    document.getElementById("showSignup");
+
+  const showLogin =
+    document.getElementById("showLogin");
+
+  const message =
+    document.getElementById("message");
+
+
+  function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = type;
+
+    message.style.display = "block";
+  }
+
+
+  function clearMessage() {
+
+    message.textContent = "";
+
+    message.style.display = "none";
+
+    message.className = "";
+  }
+
+
+  showSignup.addEventListener("click", function() {
+
+    clearMessage();
+
+    loginSection.classList.add("hidden");
+
+    signupSection.classList.remove("hidden");
+
+  });
+
+
+  showLogin.addEventListener("click", function() {
+
+    clearMessage();
+
+    signupSection.classList.add("hidden");
+
+    loginSection.classList.remove("hidden");
+
+  });
+
+
+  // MEMBER LOGIN
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
 
       event.preventDefault();
 
+      clearMessage();
+
       const email =
-        document.getElementById("email").value.trim();
+        document
+          .getElementById("loginEmail")
+          .value
+          .trim();
 
       const password =
-        document.getElementById("password").value;
+        document
+          .getElementById("loginPassword")
+          .value;
 
-      showMessage("Signing in...", "success");
+
+      showMessage(
+        "Signing in...",
+        "success"
+      );
+
 
       const { data, error } =
         await client.auth.signInWithPassword({
+
           email: email,
+
           password: password
+
         });
+
 
       if (error) {
 
@@ -279,10 +444,12 @@
         return;
       }
 
+
       showMessage(
         "Login successful. Opening member area...",
         "success"
       );
+
 
       setTimeout(function() {
 
@@ -291,26 +458,49 @@
 
       }, 1000);
 
-    });
+    }
+  );
 
 
-    signupButton.addEventListener("click", async function() {
+  // MEMBER REGISTRATION
+
+  signupForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      clearMessage();
+
+
+      const sirskiName =
+        document
+          .getElementById("sirskiName")
+          .value
+          .trim();
 
       const email =
-        document.getElementById("email").value.trim();
+        document
+          .getElementById("signupEmail")
+          .value
+          .trim();
 
       const password =
-        document.getElementById("password").value;
+        document
+          .getElementById("signupPassword")
+          .value;
 
-      if (!email || !password) {
+
+      if (!sirskiName) {
 
         showMessage(
-          "Enter your email and password first.",
+          "Please enter your Sirski Driver Name.",
           "error"
         );
 
         return;
       }
+
 
       if (password.length < 6) {
 
@@ -322,16 +512,24 @@
         return;
       }
 
+
       showMessage(
         "Creating your member account...",
         "success"
       );
 
-      const { error } =
+
+      // Create Supabase authentication account
+
+      const { data, error } =
         await client.auth.signUp({
+
           email: email,
+
           password: password
+
         });
+
 
       if (error) {
 
@@ -343,14 +541,56 @@
         return;
       }
 
+
+      if (!data.user) {
+
+        showMessage(
+          "Account creation did not return a user.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      // Save Sirski Driver Name
+
+      const { error: profileError } =
+        await client
+          .from("member_profiles")
+          .insert({
+
+            id: data.user.id,
+
+            sirski_name: sirskiName
+
+          });
+
+
+      if (profileError) {
+
+        showMessage(
+          "Account created, but the driver profile could not be saved: " +
+          profileError.message,
+          "error"
+        );
+
+        return;
+      }
+
+
       showMessage(
-        "Account created. Please check your email and confirm your account before logging in.",
+        "Account created successfully. Please check your Sirski Transport email and confirm your account before logging in.",
         "success"
       );
 
-    });
 
-  </script>
+      signupForm.reset();
+
+    }
+  );
+
+</script>
 
 </body>
 </html>
