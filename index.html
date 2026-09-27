@@ -9,6 +9,8 @@
 <meta name="description" content="Sirski Transport VTC standalone truck gallery featuring Euro Truck Simulator 2 trucks, fleet screenshots, member submissions and convoy moments.">
 <meta name="robots" content="index, follow">
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 :root{
@@ -88,6 +90,24 @@ white-space:nowrap
 .main-site:hover{
 background:var(--yellow);
 color:#000
+}
+
+.member-login{
+color:#070707;
+background:var(--yellow);
+border:1px solid var(--yellow);
+border-radius:7px;
+padding:9px 13px;
+text-decoration:none;
+font-size:13px;
+font-weight:800;
+white-space:nowrap
+}
+
+.member-login:hover{
+background:#fff;
+color:#000;
+border-color:#fff
 }
 
 /* HERO */
@@ -334,6 +354,7 @@ padding:7px 8px
 <span>Sirski Transport VTC</span>
 </a>
 
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
 <a
 class="main-site"
 href="https://sirski-transport.com/"
@@ -342,6 +363,14 @@ rel="noopener"
 >
 Main Website ↗
 </a>
+
+<a
+class="member-login"
+href="login.html"
+>
+Member Login
+</a>
+</div>
 
 </nav>
 </header>
@@ -606,75 +635,64 @@ document.body.style.overflow='';
 
 async function loadApprovedMemberGallery(){
 
-const status = document.getElementById('memberStatus');
-const gallery = document.getElementById('memberGallery');
+const status =
+document.getElementById(
+'memberStatus'
+);
 
-status.textContent = 'Testing Supabase connection...';
+const gallery =
+document.getElementById(
+'memberGallery'
+);
 
 try{
 
-const controller = new AbortController();
-const timer = setTimeout(()=>controller.abort(),8000);
+const {
+data,
+error
+} =
+await client
+.from('gallery_submissions')
+.select(
+'id,uploader_name,title,description,file_path,created_at'
+)
+.eq(
+'status',
+'approved'
+)
+.order(
+'created_at',
+{ascending:false}
+);
 
-const url =
-SUPABASE_URL +
-'/rest/v1/gallery_submissions?select=id%2Cuploader_name%2Ctitle%2Cdescription%2Cfile_path%2Ccreated_at&status=eq.approved&order=created_at.desc';
 
-const response = await fetch(url,{
-method:'GET',
-headers:{
-'apikey':SUPABASE_KEY,
-'Authorization':'Bearer '+SUPABASE_KEY,
-'Accept':'application/json'
-},
-signal:controller.signal
-});
+if(error){
 
-clearTimeout(timer);
-
-const body = await response.text();
-
-if(!response.ok){
-
-status.textContent =
-'Gallery database error (' +
-response.status +
-'): ' +
-body;
-
-console.error('Gallery database error:',response.status,body);
-return;
+throw error;
 
 }
 
-let data;
-
-try{
-data = JSON.parse(body);
-}catch(parseError){
-
-status.textContent =
-'Gallery returned invalid JSON: ' + body;
-console.error(parseError,body);
-return;
-
-}
 
 if(!data || data.length===0){
 
 status.textContent =
-'Database connection works, but there are no approved member screenshots yet.';
+'No approved member screenshots yet.';
+
 return;
 
 }
 
+
 status.textContent =
-'Database connection works. Loading approved screenshots...';
+'Approved screenshots submitted by Sirski Transport members.';
+
 
 for(const submission of data){
 
 const originalFilename =
-submission.file_path.split('/').pop();
+submission.file_path
+.split('/')
+.pop();
 
 const approvedPath =
 'approved/' +
@@ -682,18 +700,26 @@ submission.id +
 '-' +
 originalFilename;
 
-const publicData =
+
+const {
+data:publicData
+} =
 client.storage
 .from('gallery-approved')
-.getPublicUrl(approvedPath);
+.getPublicUrl(
+approvedPath
+);
+
 
 const imageUrl =
-publicData.data.publicUrl;
+publicData.publicUrl;
+
 
 const card =
 document.createElement('figure');
 
 card.className='card';
+
 
 const safeTitle =
 escapeHtml(
@@ -713,27 +739,60 @@ submission.uploader_name ||
 'Sirski Transport Member'
 );
 
+
 card.innerHTML = `
-<button type="button" aria-label="Open ${safeTitle}">
-<img src="${imageUrl}" alt="${safeTitle}" loading="lazy">
+
+<button
+type="button"
+aria-label="Open ${safeTitle}"
+>
+<img
+src="${imageUrl}"
+alt="${safeTitle}"
+loading="lazy"
+>
 </button>
+
 <figcaption>
-<h2 class="title">${safeTitle}</h2>
-<p class="description">${safeDescription}</p>
-<div class="member-name">Submitted by: <span>${safeUploader}</span></div>
+
+<h2 class="title">
+${safeTitle}
+</h2>
+
+<p class="description">
+${safeDescription}
+</p>
+
+<div class="member-name">
+Submitted by:
+<span>${safeUploader}</span>
+</div>
+
 </figcaption>
+
 `;
 
-const button = card.querySelector('button');
-const image = card.querySelector('img');
 
-button.addEventListener('click',()=>{
+const button =
+card.querySelector('button');
+
+const image =
+card.querySelector('img');
+
+
+button.addEventListener(
+'click',
+()=>{
+
 openImage(
 imageUrl,
 submission.title ||
 'Sirski Transport Member Screenshot'
 );
-});
+
+}
+);
+
 
 gallery.appendChild(card);
 
@@ -741,20 +800,18 @@ gallery.appendChild(card);
 
 }catch(error){
 
-console.error('Gallery diagnostic error:',error);
+console.error(
+'Unable to load approved member gallery:',
+error
+);
 
-if(error.name === 'AbortError'){
 status.textContent =
-'Gallery database request timed out after 8 seconds. Supabase did not return a response.';
-}else{
-status.textContent =
-'Gallery diagnostic error: ' +
-(error.message || String(error));
-}
+'Gallery diagnostic: ' + (error?.message || error?.details || String(error));
 
 }
 
 }
+
 
 function escapeHtml(value){
 
