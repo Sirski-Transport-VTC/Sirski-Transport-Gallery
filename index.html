@@ -6,7 +6,7 @@
 
 <title>Sirski Transport Gallery | ETS2 VTC Trucks</title>
 
-<meta name="description" content="Sirski Transport VTC standalone truck gallery featuring Euro Truck Simulator 2 trucks, fleet screenshots and convoy moments.">
+<meta name="description" content="Sirski Transport VTC standalone truck gallery featuring Euro Truck Simulator 2 trucks, fleet screenshots, member submissions and convoy moments.">
 <meta name="robots" content="index, follow">
 
 <style>
@@ -20,30 +20,20 @@
 --muted:#aaa
 }
 
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
-html{
-scroll-behavior:smooth
-}
+html{scroll-behavior:smooth}
 
 body{
 margin:0;
 background:
-radial-gradient(
-circle at 50% 0%,
-rgba(245,196,0,.09),
-transparent 38%
-),
+radial-gradient(circle at 50% 0%,rgba(245,196,0,.09),transparent 38%),
 var(--black);
 color:var(--text);
 font-family:Arial,Helvetica,sans-serif
 }
 
-/* =========================
-   HEADER
-========================= */
+/* HEADER */
 
 header{
 position:sticky;
@@ -82,9 +72,7 @@ object-fit:contain;
 display:block
 }
 
-.brand span{
-color:var(--yellow)
-}
+.brand span{color:var(--yellow)}
 
 .main-site{
 color:var(--yellow);
@@ -102,9 +90,7 @@ background:var(--yellow);
 color:#000
 }
 
-/* =========================
-   HERO
-========================= */
+/* HERO */
 
 .hero{
 max-width:1100px;
@@ -145,9 +131,7 @@ margin:25px auto 0;
 border-radius:20px
 }
 
-/* =========================
-   GALLERY
-========================= */
+/* GALLERY */
 
 .gallery{
 max-width:1200px;
@@ -184,13 +168,9 @@ object-fit:cover;
 transition:transform .25s ease
 }
 
-.card button:hover img{
-transform:scale(1.025)
-}
+.card button:hover img{transform:scale(1.025)}
 
-figcaption{
-padding:15px 16px 18px
-}
+figcaption{padding:15px 16px 18px}
 
 .title{
 margin:0 0 7px;
@@ -206,9 +186,35 @@ font-size:14px;
 line-height:1.55
 }
 
-/* =========================
-   FOOTER
-========================= */
+.member-name{
+margin-top:9px;
+color:#ddd;
+font-size:12px;
+font-weight:700
+}
+
+.member-name span{color:var(--yellow)}
+
+.section-heading{
+max-width:1200px;
+margin:0 auto;
+padding:0 20px 18px;
+font-size:26px;
+font-weight:900;
+text-transform:uppercase
+}
+
+.section-heading span{color:var(--yellow)}
+
+.member-status{
+max-width:1200px;
+margin:0 auto;
+padding:0 20px 20px;
+color:var(--muted);
+font-size:14px
+}
+
+/* FOOTER */
 
 footer{
 border-top:1px solid rgba(255,255,255,.08);
@@ -218,13 +224,9 @@ color:#777;
 font-size:13px
 }
 
-footer strong{
-color:var(--yellow)
-}
+footer strong{color:var(--yellow)}
 
-/* =========================
-   LIGHTBOX
-========================= */
+/* LIGHTBOX */
 
 .lightbox{
 position:fixed;
@@ -237,9 +239,7 @@ padding:20px;
 background:rgba(0,0,0,.94)
 }
 
-.lightbox.open{
-display:flex
-}
+.lightbox.open{display:flex}
 
 .lightbox img{
 max-width:96vw;
@@ -262,9 +262,7 @@ font-size:27px;
 cursor:pointer
 }
 
-/* =========================
-   MOBILE
-========================= */
+/* MOBILE */
 
 @media(max-width:760px){
 
@@ -274,21 +272,13 @@ padding-left:14px;
 padding-right:14px
 }
 
-.hero{
-padding:55px 16px 35px
-}
+.hero{padding:55px 16px 35px}
 
-.hero p{
-font-size:15px
-}
+.hero p{font-size:15px}
 
-.nav{
-padding:10px 14px
-}
+.nav{padding:10px 14px}
 
-.brand{
-font-size:13px
-}
+.brand{font-size:13px}
 
 .brand img{
 width:36px;
@@ -300,11 +290,17 @@ font-size:11px;
 padding:8px 10px
 }
 
+.section-heading{
+padding-left:14px;
+padding-right:14px
 }
 
-/* =========================
-   VERY SMALL SCREENS
-========================= */
+.member-status{
+padding-left:14px;
+padding-right:14px
+}
+
+}
 
 @media(max-width:430px){
 
@@ -330,23 +326,12 @@ padding:7px 8px
 
 <body>
 
-<!-- =========================
-     HEADER
-========================= -->
-
 <header>
-
 <nav class="nav">
 
 <a class="brand" href="./">
-
-<img
-src="Sirski_Transport_Logo.png"
-alt="Sirski Transport VTC Logo"
->
-
+<img src="Sirski_Transport_Logo.png" alt="Sirski Transport VTC Logo">
 <span>Sirski Transport VTC</span>
-
 </a>
 
 <a
@@ -359,309 +344,138 @@ Main Website ↗
 </a>
 
 </nav>
-
 </header>
-
-
-<!-- =========================
-     MAIN CONTENT
-========================= -->
 
 <main>
 
 <section class="hero">
 
-<div class="eyebrow">
-Sirski Transport VTC
-</div>
+<div class="eyebrow">Sirski Transport VTC</div>
 
-<h1>
-Truck Gallery
-</h1>
+<h1>Truck Gallery</h1>
 
 <p>
-Explore Sirski Transport trucks, fleet screenshots and convoy moments from Euro Truck Simulator 2.
+Explore Sirski Transport trucks, fleet screenshots, member submissions and convoy moments from Euro Truck Simulator 2.
 </p>
 
 <div class="accent"></div>
 
 </section>
 
-
-<!-- =========================
-     GALLERY
-========================= -->
+<!-- ORIGINAL PROJECT 2 GALLERY -->
 
 <section
 class="gallery"
 aria-label="Sirski Transport truck gallery"
 >
 
-
-<!-- TRUCK 01 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck01.jpeg','Sirski Transport Truck')"
->
-
-<img
-src="truck01.jpeg"
-alt="Sirski Transport truck in Euro Truck Simulator 2"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck01.jpeg','Sirski Transport Truck')">
+<img src="truck01.jpeg" alt="Sirski Transport truck in Euro Truck Simulator 2" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski Transport Truck
-</h2>
-
-<p class="description">
-Sirski Transport VTC truck screenshot from Euro Truck Simulator 2.
-</p>
-
+<h2 class="title">Sirski Transport Truck</h2>
+<p class="description">Sirski Transport VTC truck screenshot from Euro Truck Simulator 2.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 02 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck02.jpeg','Sirski Scania Hiyaw')"
->
-
-<img
-src="truck02.jpeg"
-alt="Sirski Scania Hiyaw truck in Euro Truck Simulator 2"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck02.jpeg','Sirski Scania Hiyaw')">
+<img src="truck02.jpeg" alt="Sirski Scania Hiyaw truck in Euro Truck Simulator 2" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski Scania Hiyaw
-</h2>
-
-<p class="description">
-Sirski Transport Scania build and VTC branding.
-</p>
-
+<h2 class="title">Sirski Scania Hiyaw</h2>
+<p class="description">Sirski Transport Scania build and VTC branding.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 03 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck03.jpeg','Sirski Transport Fleet JD')"
->
-
-<img
-src="truck03.jpeg"
-alt="Sirski Transport Fleet JD"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck03.jpeg','Sirski Transport Fleet JD')">
+<img src="truck03.jpeg" alt="Sirski Transport Fleet JD" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski Transport Fleet JD
-</h2>
-
-<p class="description">
-A Sirski Transport fleet lined up for a convoy.
-</p>
-
+<h2 class="title">Sirski Transport Fleet JD</h2>
+<p class="description">A Sirski Transport fleet lined up for a convoy.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 04 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck04.jpeg','Volvo Loaded')"
->
-
-<img
-src="truck04.jpeg"
-alt="Sirski Transport Volvo Loaded truck"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck04.jpeg','Volvo Loaded')">
+<img src="truck04.jpeg" alt="Sirski Transport Volvo Loaded truck" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Volvo Loaded
-</h2>
-
-<p class="description">
-Sirski Transport trucks during an ETS2 session.
-</p>
-
+<h2 class="title">Volvo Loaded</h2>
+<p class="description">Sirski Transport trucks during an ETS2 session.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 05 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck05.jpeg','Sirski DAF')"
->
-
-<img
-src="truck05.jpeg"
-alt="Sirski Transport DAF truck"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck05.jpeg','Sirski DAF')">
+<img src="truck05.jpeg" alt="Sirski Transport DAF truck" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski DAF
-</h2>
-
-<p class="description">
-Sirski Transport DAF truck screenshot.
-</p>
-
+<h2 class="title">Sirski DAF</h2>
+<p class="description">Sirski Transport DAF truck screenshot.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 06 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck06.jpeg','Sirski Convoy')"
->
-
-<img
-src="truck06.jpeg"
-alt="Sirski Transport convoy"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck06.jpeg','Sirski Convoy')">
+<img src="truck06.jpeg" alt="Sirski Transport convoy" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski Convoy
-</h2>
-
-<p class="description">
-Sirski Transport trucks preparing for the road.
-</p>
-
+<h2 class="title">Sirski Convoy</h2>
+<p class="description">Sirski Transport trucks preparing for the road.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 07 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck07.jpeg','Sirski Scania 770')"
->
-
-<img
-src="truck07.jpeg"
-alt="Sirski Scania 770"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck07.jpeg','Sirski Scania 770')">
+<img src="truck07.jpeg" alt="Sirski Scania 770" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Sirski Scania 770
-</h2>
-
-<p class="description">
-A detailed Scania build from the Sirski Transport fleet.
-</p>
-
+<h2 class="title">Sirski Scania 770</h2>
+<p class="description">A detailed Scania build from the Sirski Transport fleet.</p>
 </figcaption>
-
 </figure>
 
-
-<!-- TRUCK 08 -->
-
 <figure class="card">
-
-<button
-type="button"
-onclick="openImage('truck08.png','Sirski Transport Delivery')"
->
-
-<img
-src="truck08.png"
-alt="Sirski Transport Delivery"
-loading="lazy"
->
-
+<button type="button" onclick="openImage('truck08.png','Sirski Transport Delivery')">
+<img src="truck08.png" alt="Sirski Transport Delivery" loading="lazy">
 </button>
-
 <figcaption>
-
-<h2 class="title">
-Delivery
-</h2>
-
-<p class="description">
-Sirski Transport delivery from the road.
-</p>
-
+<h2 class="title">Delivery</h2>
+<p class="description">Sirski Transport delivery from the road.</p>
 </figcaption>
-
 </figure>
 
+</section>
+
+<!-- APPROVED MEMBER SUBMISSIONS -->
+
+<section aria-label="Approved member gallery">
+
+<div class="section-heading">
+Member <span>Gallery</span>
+</div>
+
+<div
+id="memberStatus"
+class="member-status"
+>
+Loading approved member screenshots...
+</div>
+
+<section
+id="memberGallery"
+class="gallery"
+aria-label="Approved Sirski Transport member screenshots"
+>
+</section>
 
 </section>
 
 </main>
-
-
-<!-- =========================
-     FOOTER
-========================= -->
 
 <footer>
 
@@ -675,10 +489,7 @@ Independent Project 2 — Standalone Truck Gallery
 
 </footer>
 
-
-<!-- =========================
-     LIGHTBOX
-========================= -->
+<!-- LIGHTBOX -->
 
 <div
 class="lightbox"
@@ -702,21 +513,38 @@ alt=""
 
 </div>
 
-
-<!-- =========================
-     JAVASCRIPT
-========================= -->
-
 <script>
+
+/* =========================
+   SUPABASE - PROJECT 2 ONLY
+========================= */
+
+const SUPABASE_URL =
+"https://siedpigixmtmmihdsqpj.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+const client =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
+/* =========================
+   LIGHTBOX
+========================= */
 
 function openImage(src,alt){
 
-const b=document.getElementById('lightbox');
+const b =
+document.getElementById('lightbox');
 
-const i=document.getElementById('lightboxImage');
+const i =
+document.getElementById('lightboxImage');
 
 i.src=src;
-
 i.alt=alt;
 
 b.classList.add('open');
@@ -733,11 +561,14 @@ e.target.id==='lightbox' ||
 e.target.classList.contains('close')
 ){
 
-const b=document.getElementById('lightbox');
+const b =
+document.getElementById('lightbox');
 
 b.classList.remove('open');
 
-document.getElementById('lightboxImage').src='';
+document.getElementById(
+'lightboxImage'
+).src='';
 
 document.body.style.overflow='';
 
@@ -746,21 +577,226 @@ document.body.style.overflow='';
 }
 
 
-document.addEventListener('keydown',e=>{
+document.addEventListener(
+'keydown',
+e=>{
 
 if(e.key==='Escape'){
 
-const b=document.getElementById('lightbox');
+const b =
+document.getElementById('lightbox');
 
 b.classList.remove('open');
 
-document.getElementById('lightboxImage').src='';
+document.getElementById(
+'lightboxImage'
+).src='';
 
 document.body.style.overflow='';
 
 }
 
-});
+}
+);
+
+
+/* =========================
+   APPROVED MEMBER GALLERY
+========================= */
+
+async function loadApprovedMemberGallery(){
+
+const status =
+document.getElementById(
+'memberStatus'
+);
+
+const gallery =
+document.getElementById(
+'memberGallery'
+);
+
+try{
+
+const {
+data,
+error
+} =
+await client
+.from('gallery_submissions')
+.select(
+'id,uploader_name,title,description,file_path,created_at'
+)
+.eq(
+'status',
+'approved'
+)
+.order(
+'created_at',
+{ascending:false}
+);
+
+
+if(error){
+
+throw error;
+
+}
+
+
+if(!data || data.length===0){
+
+status.textContent =
+'No approved member screenshots yet.';
+
+return;
+
+}
+
+
+status.textContent =
+'Approved screenshots submitted by Sirski Transport members.';
+
+
+for(const submission of data){
+
+const originalFilename =
+submission.file_path
+.split('/')
+.pop();
+
+const approvedPath =
+'approved/' +
+submission.id +
+'-' +
+originalFilename;
+
+
+const {
+data:publicData
+} =
+client.storage
+.from('gallery-approved')
+.getPublicUrl(
+approvedPath
+);
+
+
+const imageUrl =
+publicData.publicUrl;
+
+
+const card =
+document.createElement('figure');
+
+card.className='card';
+
+
+const safeTitle =
+escapeHtml(
+submission.title ||
+'Sirski Transport Member'
+);
+
+const safeDescription =
+escapeHtml(
+submission.description ||
+'Member screenshot from Euro Truck Simulator 2.'
+);
+
+const safeUploader =
+escapeHtml(
+submission.uploader_name ||
+'Sirski Transport Member'
+);
+
+
+card.innerHTML = `
+
+<button
+type="button"
+aria-label="Open ${safeTitle}"
+>
+<img
+src="${imageUrl}"
+alt="${safeTitle}"
+loading="lazy"
+>
+</button>
+
+<figcaption>
+
+<h2 class="title">
+${safeTitle}
+</h2>
+
+<p class="description">
+${safeDescription}
+</p>
+
+<div class="member-name">
+Submitted by:
+<span>${safeUploader}</span>
+</div>
+
+</figcaption>
+
+`;
+
+
+const button =
+card.querySelector('button');
+
+const image =
+card.querySelector('img');
+
+
+button.addEventListener(
+'click',
+()=>{
+
+openImage(
+imageUrl,
+submission.title ||
+'Sirski Transport Member Screenshot'
+);
+
+}
+);
+
+
+gallery.appendChild(card);
+
+}
+
+}catch(error){
+
+console.error(
+'Unable to load approved member gallery:',
+error
+);
+
+status.textContent =
+'Unable to load approved member screenshots right now.';
+
+}
+
+}
+
+
+function escapeHtml(value){
+
+return String(value)
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
+
+}
+
+
+loadApprovedMemberGallery();
 
 </script>
 
