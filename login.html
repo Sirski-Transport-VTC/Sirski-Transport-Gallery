@@ -322,7 +322,6 @@
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
 
-
   const { createClient } = supabase;
 
   const client =
@@ -396,7 +395,9 @@
   });
 
 
+  // =========================================
   // MEMBER LOGIN
+  // =========================================
 
   loginForm.addEventListener(
     "submit",
@@ -445,6 +446,73 @@
       }
 
 
+      if (!data || !data.user) {
+
+        showMessage(
+          "Login succeeded, but the user account could not be identified.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      // =========================================
+      // CHECK PROJECT 2 GALLERY ADMIN
+      // =========================================
+
+      const { data: admin, error: adminError } =
+        await client
+          .from("gallery_admins")
+          .select("user_id")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+
+
+      if (adminError) {
+
+        console.error(
+          "Gallery admin check failed:",
+          adminError
+        );
+
+        showMessage(
+          "Login successful, but administrator access could not be verified. Please try again.",
+          "error"
+        );
+
+        await client.auth.signOut();
+
+        return;
+      }
+
+
+      // =========================================
+      // ADMIN → GALLERY ADMINISTRATION
+      // =========================================
+
+      if (admin) {
+
+        showMessage(
+          "Administrator login successful. Opening Gallery Administration...",
+          "success"
+        );
+
+        setTimeout(function() {
+
+          window.location.href =
+            "admin.html";
+
+        }, 700);
+
+        return;
+      }
+
+
+      // =========================================
+      // NORMAL MEMBER → MEMBER AREA
+      // =========================================
+
       showMessage(
         "Login successful. Opening member area...",
         "success"
@@ -462,7 +530,9 @@
   );
 
 
+  // =========================================
   // MEMBER REGISTRATION
+  // =========================================
 
   signupForm.addEventListener(
     "submit",
@@ -519,14 +589,29 @@
       );
 
 
-      // Create Supabase authentication account
+      // =========================================
+      // CREATE AUTH ACCOUNT
+      // Sirski Driver Name is stored in metadata.
+      // The Project 2 database trigger creates
+      // member_profiles automatically.
+      // =========================================
 
       const { data, error } =
         await client.auth.signUp({
 
           email: email,
 
-          password: password
+          password: password,
+
+          options: {
+
+            data: {
+
+              sirski_name: sirskiName
+
+            }
+
+          }
 
         });
 
@@ -546,32 +631,6 @@
 
         showMessage(
           "Account creation did not return a user.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      // Save Sirski Driver Name
-
-      const { error: profileError } =
-        await client
-          .from("member_profiles")
-          .insert({
-
-            id: data.user.id,
-
-            sirski_name: sirskiName
-
-          });
-
-
-      if (profileError) {
-
-        showMessage(
-          "Account created, but the driver profile could not be saved: " +
-          profileError.message,
           "error"
         );
 
