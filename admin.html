@@ -5,173 +5,1081 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sirski Transport Gallery - Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#111;color:#fff}
-header{background:#000;border-bottom:2px solid #f5c400;padding:20px;text-align:center}
-header img{width:180px;max-width:70%}h1{margin:8px 0}.container{width:min(1100px,94%);margin:30px auto}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:25px}
-.buttons,.actions{display:flex;gap:10px;flex-wrap:wrap}
-button,.link-button{border:0;border-radius:6px;padding:10px 16px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
-.back{background:#555;color:#fff}.logout{background:#b00020;color:#fff}.approve{background:#1b8f3a;color:#fff}.reject{background:#c62828;color:#fff}
-#message{display:none;padding:14px;border-radius:7px;margin-bottom:20px;font-weight:bold}
-#message.success{display:block;background:#173d22;border:1px solid #2e9d50;color:#baf5c8}
-#message.error{display:block;background:#451b1b;border:1px solid #d44;color:#ffc1c1}
-#loading{text-align:center;color:#bbb;padding:30px}
-.submission{background:#1b1b1b;border:1px solid #333;border-radius:10px;padding:20px;margin-bottom:22px}
-.submission-grid{display:grid;grid-template-columns:280px 1fr;gap:22px}
-.preview{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:8px;background:#000;border:1px solid #333}
-.details h2{margin-top:0}.detail{margin:7px 0;line-height:1.45}.label{color:#f5c400;font-weight:bold}
-.status{display:inline-block;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:bold;text-transform:uppercase}
-.status.pending{background:#665300;color:#ffe783}.status.approved{background:#174f29;color:#a8efbb}.status.rejected{background:#571c1c;color:#ffb4b4}
-.empty{text-align:center;padding:50px 20px;color:#aaa;border:1px dashed #444;border-radius:10px}
-@media(max-width:700px){.submission-grid{grid-template-columns:1fr}h1{font-size:23px}}
-</style>
-</head>
-<body>
-<header>
-<img src="Sirski_Transport_Logo.png" alt="Sirski Transport">
-<h1>Gallery Administration</h1>
-<div>Sirski Transport VTC</div>
-</header>
-<div class="container">
-<div class="topbar">
-<strong>Screenshot Submissions</strong>
-<div class="buttons">
-<a class="link-button back" href="index.html">Back to Gallery</a>
-<button class="logout" onclick="logout()">Logout</button>
-</div>
-</div>
-<div id="message"></div>
-<div id="loading">Checking administrator access...</div>
-<div id="submissions"></div>
-</div>
-<script>
-const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
-const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
-const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-function showMessage(message,type){
- const box=document.getElementById("message");
- box.textContent=message; box.className=type||"";
- window.scrollTo({top:0,behavior:"smooth"});
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#111;
+  color:#fff
 }
 
+header{
+  background:#000;
+  border-bottom:2px solid #f5c400;
+  padding:20px;
+  text-align:center
+}
+
+header img{
+  width:180px;
+  max-width:70%
+}
+
+h1{
+  margin:8px 0
+}
+
+.container{
+  width:min(1100px,94%);
+  margin:30px auto
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:25px
+}
+
+.buttons,
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+button,
+.link-button{
+  border:0;
+  border-radius:6px;
+  padding:10px 16px;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block
+}
+
+.back{
+  background:#555;
+  color:#fff
+}
+
+.logout{
+  background:#b00020;
+  color:#fff
+}
+
+.approve{
+  background:#1b8f3a;
+  color:#fff
+}
+
+.reject{
+  background:#c62828;
+  color:#fff
+}
+
+/* NEW: Delete approved screenshot */
+.delete{
+  background:#8b0000;
+  color:#fff
+}
+
+.delete:hover{
+  background:#b00000
+}
+
+#message{
+  display:none;
+  padding:14px;
+  border-radius:7px;
+  margin-bottom:20px;
+  font-weight:bold
+}
+
+#message.success{
+  display:block;
+  background:#173d22;
+  border:1px solid #2e9d50;
+  color:#baf5c8
+}
+
+#message.error{
+  display:block;
+  background:#451b1b;
+  border:1px solid #d44;
+  color:#ffc1c1
+}
+
+#loading{
+  text-align:center;
+  color:#bbb;
+  padding:30px
+}
+
+.submission{
+  background:#1b1b1b;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:22px
+}
+
+.submission-grid{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:22px
+}
+
+.preview{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:8px;
+  background:#000;
+  border:1px solid #333
+}
+
+.details h2{
+  margin-top:0
+}
+
+.detail{
+  margin:7px 0;
+  line-height:1.45
+}
+
+.label{
+  color:#f5c400;
+  font-weight:bold
+}
+
+.status{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  text-transform:uppercase
+}
+
+.status.pending{
+  background:#665300;
+  color:#ffe783
+}
+
+.status.approved{
+  background:#174f29;
+  color:#a8efbb
+}
+
+.status.rejected{
+  background:#571c1c;
+  color:#ffb4b4
+}
+
+.empty{
+  text-align:center;
+  padding:50px 20px;
+  color:#aaa;
+  border:1px dashed #444;
+  border-radius:10px
+}
+
+.delete-warning{
+  color:#ffb4b4;
+  font-size:13px;
+  margin-top:8px
+}
+
+@media(max-width:700px){
+  .submission-grid{
+    grid-template-columns:1fr
+  }
+
+  h1{
+    font-size:23px
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<img
+  src="Sirski_Transport_Logo.png"
+  alt="Sirski Transport"
+>
+
+<h1>Gallery Administration</h1>
+
+<div>Sirski Transport VTC</div>
+
+</header>
+
+
+<div class="container">
+
+<div class="topbar">
+
+<strong>Screenshot Submissions</strong>
+
+<div class="buttons">
+
+<a
+  class="link-button back"
+  href="index.html"
+>
+Back to Gallery
+</a>
+
+<button
+  class="logout"
+  onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</div>
+
+
+<div id="message"></div>
+
+<div id="loading">
+Checking administrator access...
+</div>
+
+<div id="submissions"></div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
+
+const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+const client=window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+// =========================================
+// MESSAGE
+// =========================================
+
+function showMessage(message,type){
+
+ const box=document.getElementById("message");
+
+ box.textContent=message;
+
+ box.className=type||"";
+
+ window.scrollTo({
+   top:0,
+   behavior:"smooth"
+ });
+
+}
+
+
+// =========================================
+// EXISTING ADMIN VERIFICATION
+// =========================================
+
 async function checkAdmin(){
- const {data:sessionData,error:sessionError}=await client.auth.getSession();
- if(sessionError) throw new Error(sessionError.message);
+
+ const {
+   data:sessionData,
+   error:sessionError
+ }=await client.auth.getSession();
+
+
+ if(sessionError)
+   throw new Error(
+     sessionError.message
+   );
+
+
  const session=sessionData.session;
- if(!session){window.location.href="login.html";return false;}
- const {data:admin,error:adminError}=await client.from("gallery_admins")
-   .select("user_id").eq("user_id",session.user.id).maybeSingle();
- if(adminError) throw new Error("Unable to verify administrator access: "+adminError.message);
- if(!admin){
-   document.getElementById("loading").textContent="Access denied. This account is not a gallery administrator.";
+
+
+ if(!session){
+
+   window.location.href="login.html";
+
    return false;
  }
+
+
+ const {
+   data:admin,
+   error:adminError
+ }=await client
+   .from("gallery_admins")
+   .select("user_id")
+   .eq(
+     "user_id",
+     session.user.id
+   )
+   .maybeSingle();
+
+
+ if(adminError)
+   throw new Error(
+     "Unable to verify administrator access: "+
+     adminError.message
+   );
+
+
+ if(!admin){
+
+   document.getElementById(
+     "loading"
+   ).textContent=
+     "Access denied. This account is not a gallery administrator.";
+
+   return false;
+ }
+
+
  return true;
 }
 
+
+// =========================================
+// LOAD SUBMISSIONS
+// =========================================
+
 async function loadSubmissions(){
- const container=document.getElementById("submissions");
+
+ const container=
+   document.getElementById(
+     "submissions"
+   );
+
+
  container.innerHTML="";
- document.getElementById("loading").style.display="block";
- const {data,error}=await client.from("gallery_submissions").select("*").order("created_at",{ascending:false});
- if(error) throw new Error("Unable to load submissions: "+error.message);
- document.getElementById("loading").style.display="none";
- if(!data||data.length===0){
-   container.innerHTML='<div class="empty">No screenshot submissions found.</div>'; return;
+
+
+ document.getElementById(
+   "loading"
+ ).style.display="block";
+
+
+ const {
+   data,
+   error
+ }=await client
+   .from("gallery_submissions")
+   .select("*")
+   .order(
+     "created_at",
+     {ascending:false}
+   );
+
+
+ if(error)
+   throw new Error(
+     "Unable to load submissions: "+
+     error.message
+   );
+
+
+ document.getElementById(
+   "loading"
+ ).style.display="none";
+
+
+ if(!data || data.length===0){
+
+   container.innerHTML=
+     '<div class="empty">No screenshot submissions found.</div>';
+
+   return;
  }
+
+
  for(const submission of data){
+
    let imageUrl="";
+
+
    try{
-     const {data:signedData,error:signedError}=await client.storage.from("gallery-submissions")
-       .createSignedUrl(submission.file_path,3600);
-     if(!signedError&&signedData) imageUrl=signedData.signedUrl;
-   }catch(e){console.error(e);}
-   const card=document.createElement("div");
-   card.className="submission";
-   const created=submission.created_at?new Date(submission.created_at).toLocaleString():"-";
-   const reviewed=submission.reviewed_at?new Date(submission.reviewed_at).toLocaleString():"-";
-   card.innerHTML=`
-   <div class="submission-grid">
-    <div>${imageUrl?`<img class="preview" src="${imageUrl}" alt="Submitted screenshot">`:`<div class="empty">Image preview unavailable</div>`}</div>
-    <div class="details">
-     <h2>${escapeHtml(submission.title||"Untitled")}</h2>
-     <div class="detail"><span class="label">Driver:</span> ${escapeHtml(submission.uploader_name||"-")}</div>
-     <div class="detail"><span class="label">Description:</span> ${escapeHtml(submission.description||"-")}</div>
-     <div class="detail"><span class="label">Submitted:</span> ${created}</div>
-     <div class="detail"><span class="label">Reviewed:</span> ${reviewed}</div>
-     <div class="detail"><span class="label">Status:</span> <span class="status ${submission.status}">${escapeHtml(submission.status)}</span></div>
-     ${submission.status==="pending"?`<div class="actions">
-       <button class="approve" onclick="updateStatus('${submission.id}','approved')">Approve</button>
-       <button class="reject" onclick="updateStatus('${submission.id}','rejected')">Reject</button>
-     </div>`:""}
-    </div>
-   </div>`;
-   container.appendChild(card);
- }
-}
 
-async function updateStatus(id,status){
- const action=status==="approved"?"approve":"reject";
- if(!confirm("Are you sure you want to "+action+" this screenshot?")) return;
- try{
-   const {data:submission,error:fetchError}=await client.from("gallery_submissions").select("*").eq("id",id).single();
-   if(fetchError||!submission) throw new Error("Unable to find the submission.");
+     const {
+       data:signedData,
+       error:signedError
+     }=await client
+       .storage
+       .from("gallery-submissions")
+       .createSignedUrl(
+         submission.file_path,
+         3600
+       );
 
-   if(status==="approved"){
-     const {data:fileData,error:downloadError}=await client.storage.from("gallery-submissions").download(submission.file_path);
-     if(downloadError) throw new Error("Unable to read the submitted image: "+downloadError.message);
 
-     const originalFilename=submission.file_path.split("/").pop();
-     const approvedPath="approved/"+submission.id+"-"+originalFilename;
+     if(
+       !signedError &&
+       signedData
+     ){
 
-     const {error:uploadError}=await client.storage.from("gallery-approved").upload(
-       approvedPath,fileData,{cacheControl:"31536000",upsert:false,contentType:fileData.type||"image/jpeg"}
-     );
+       imageUrl=
+         signedData.signedUrl;
 
-     if(uploadError){
-       const msg=uploadError.message.toLowerCase();
-       if(!msg.includes("already exists")&&!msg.includes("duplicate")){
-         throw new Error("Unable to publish the image: "+uploadError.message);
-       }
      }
+
+   }catch(e){
+
+     console.error(e);
+
    }
 
-   const {error:updateError}=await client.from("gallery_submissions").update({
-     status:status,reviewed_at:new Date().toISOString()
-   }).eq("id",id);
-   if(updateError) throw new Error("Unable to update submission: "+updateError.message);
 
-   showMessage(status==="approved"?"Screenshot approved and published to the gallery.":"Submission rejected successfully.","success");
-   await loadSubmissions();
- }catch(error){
-   console.error(error); showMessage(error.message,"error");
+   const card=
+     document.createElement("div");
+
+
+   card.className=
+     "submission";
+
+
+   const created=
+     submission.created_at
+       ?new Date(
+          submission.created_at
+        ).toLocaleString()
+       :"-";
+
+
+   const reviewed=
+     submission.reviewed_at
+       ?new Date(
+          submission.reviewed_at
+        ).toLocaleString()
+       :"-";
+
+
+   // =======================================
+   // EXISTING PENDING ACTIONS
+   // =======================================
+
+   let actions="";
+
+
+   if(
+     submission.status==="pending"
+   ){
+
+     actions=`
+       <div class="actions">
+
+         <button
+           class="approve"
+           onclick="updateStatus('${submission.id}','approved')"
+         >
+           Approve
+         </button>
+
+         <button
+           class="reject"
+           onclick="updateStatus('${submission.id}','rejected')"
+         >
+           Reject
+         </button>
+
+       </div>
+     `;
+
+   }
+
+
+   // =======================================
+   // NEW APPROVED DELETE ACTION
+   // =======================================
+
+   if(
+     submission.status==="approved"
+   ){
+
+     actions=`
+       <div class="actions">
+
+         <button
+           class="delete"
+           onclick="deleteApprovedSubmission('${submission.id}')"
+         >
+           Delete
+         </button>
+
+       </div>
+
+       <div class="delete-warning">
+         Deleting this screenshot will remove it from the public gallery.
+       </div>
+     `;
+
+   }
+
+
+   card.innerHTML=`
+
+   <div class="submission-grid">
+
+    <div>
+
+      ${
+        imageUrl
+        ?
+        `<img
+          class="preview"
+          src="${imageUrl}"
+          alt="Submitted screenshot"
+        >`
+        :
+        `<div class="empty">
+          Image preview unavailable
+        </div>`
+      }
+
+    </div>
+
+
+    <div class="details">
+
+     <h2>
+       ${escapeHtml(
+         submission.title||
+         "Untitled"
+       )}
+     </h2>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Driver:
+       </span>
+
+       ${escapeHtml(
+         submission.uploader_name||
+         "-"
+       )}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Description:
+       </span>
+
+       ${escapeHtml(
+         submission.description||
+         "-"
+       )}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Submitted:
+       </span>
+
+       ${created}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Reviewed:
+       </span>
+
+       ${reviewed}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Status:
+       </span>
+
+       <span
+         class="status ${submission.status}"
+       >
+         ${escapeHtml(
+           submission.status
+         )}
+       </span>
+
+     </div>
+
+
+     ${actions}
+
+    </div>
+
+   </div>
+
+   `;
+
+
+   container.appendChild(card);
+
  }
+
 }
+
+
+// =========================================
+// EXISTING APPROVE / REJECT
+// =========================================
+
+async function updateStatus(
+ id,
+ status
+){
+
+ const action=
+   status==="approved"
+   ?"approve"
+   :"reject";
+
+
+ if(
+   !confirm(
+     "Are you sure you want to "+
+     action+
+     " this screenshot?"
+   )
+ )
+   return;
+
+
+ try{
+
+   const {
+     data:submission,
+     error:fetchError
+   }=await client
+     .from("gallery_submissions")
+     .select("*")
+     .eq(
+       "id",
+       id
+     )
+     .single();
+
+
+   if(
+     fetchError||
+     !submission
+   )
+     throw new Error(
+       "Unable to find the submission."
+     );
+
+
+   // =====================================
+   // EXISTING APPROVAL PROCESS
+   // =====================================
+
+   if(status==="approved"){
+
+     const {
+       data:fileData,
+       error:downloadError
+     }=await client
+       .storage
+       .from("gallery-submissions")
+       .download(
+         submission.file_path
+       );
+
+
+     if(downloadError)
+       throw new Error(
+         "Unable to read the submitted image: "+
+         downloadError.message
+       );
+
+
+     const originalFilename=
+       submission.file_path
+         .split("/")
+         .pop();
+
+
+     const approvedPath=
+       "approved/"+
+       submission.id+
+       "-"+
+       originalFilename;
+
+
+     const {
+       error:uploadError
+     }=await client
+       .storage
+       .from("gallery-approved")
+       .upload(
+         approvedPath,
+         fileData,
+         {
+           cacheControl:"31536000",
+           upsert:false,
+           contentType:
+             fileData.type||
+             "image/jpeg"
+         }
+       );
+
+
+     if(uploadError){
+
+       const msg=
+         uploadError.message
+           .toLowerCase();
+
+
+       if(
+         !msg.includes(
+           "already exists"
+         ) &&
+         !msg.includes(
+           "duplicate"
+         )
+       ){
+
+         throw new Error(
+           "Unable to publish the image: "+
+           uploadError.message
+         );
+
+       }
+
+     }
+
+   }
+
+
+   const {
+     error:updateError
+   }=await client
+     .from("gallery_submissions")
+     .update({
+       status:status,
+       reviewed_at:
+         new Date().toISOString()
+     })
+     .eq(
+       "id",
+       id
+     );
+
+
+   if(updateError)
+     throw new Error(
+       "Unable to update submission: "+
+       updateError.message
+     );
+
+
+   showMessage(
+     status==="approved"
+       ?"Screenshot approved and published to the gallery."
+       :"Submission rejected successfully.",
+     "success"
+   );
+
+
+   await loadSubmissions();
+
+
+ }catch(error){
+
+   console.error(error);
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
+ }
+
+}
+
+
+// =========================================
+// NEW: DELETE APPROVED SCREENSHOT
+// =========================================
+
+async function deleteApprovedSubmission(
+ id
+){
+
+ const confirmed=
+   confirm(
+     "Delete this approved screenshot?\n\n"+
+     "This will remove the screenshot from the public gallery and delete its submission record.\n\n"+
+     "This action cannot be undone."
+   );
+
+
+ if(!confirmed)
+   return;
+
+
+ try{
+
+   // =====================================
+   // GET SUBMISSION
+   // =====================================
+
+   const {
+     data:submission,
+     error:fetchError
+   }=await client
+     .from("gallery_submissions")
+     .select("*")
+     .eq(
+       "id",
+       id
+     )
+     .single();
+
+
+   if(
+     fetchError||
+     !submission
+   ){
+
+     throw new Error(
+       "Unable to find the submission."
+     );
+
+   }
+
+
+   // =====================================
+   // ONLY APPROVED ITEMS CAN BE DELETED
+   // =====================================
+
+   if(
+     submission.status!=="approved"
+   ){
+
+     throw new Error(
+       "Only approved screenshots can be deleted."
+     );
+
+   }
+
+
+   // =====================================
+   // BUILD APPROVED STORAGE PATH
+   // =====================================
+
+   const originalFilename=
+     submission.file_path
+       .split("/")
+       .pop();
+
+
+   const approvedPath=
+     "approved/"+
+     submission.id+
+     "-"+
+     originalFilename;
+
+
+   // =====================================
+   // DELETE APPROVED IMAGE
+   // =====================================
+
+   const {
+     error:storageError
+   }=await client
+     .storage
+     .from("gallery-approved")
+     .remove([
+       approvedPath
+     ]);
+
+
+   if(storageError){
+
+     throw new Error(
+       "Unable to delete the approved image: "+
+       storageError.message
+     );
+
+   }
+
+
+   // =====================================
+   // DELETE DATABASE RECORD
+   // =====================================
+
+   const {
+     error:databaseError
+   }=await client
+     .from("gallery_submissions")
+     .delete()
+     .eq(
+       "id",
+       id
+     );
+
+
+   if(databaseError){
+
+     throw new Error(
+       "The image was removed, but the submission record could not be deleted: "+
+       databaseError.message
+     );
+
+   }
+
+
+   // =====================================
+   // SUCCESS
+   // =====================================
+
+   showMessage(
+     "Approved screenshot deleted successfully.",
+     "success"
+   );
+
+
+   await loadSubmissions();
+
+
+ }catch(error){
+
+   console.error(error);
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
+ }
+
+}
+
+
+// =========================================
+// LOGOUT
+// =========================================
 
 async function logout(){
+
  await client.auth.signOut();
- window.location.href="login.html";
+
+ window.location.href=
+   "login.html";
+
 }
+
+
+// =========================================
+// ESCAPE HTML
+// =========================================
 
 function escapeHtml(value){
- return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
- .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+ return String(value)
+
+   .replaceAll(
+     "&",
+     "&amp;"
+   )
+
+   .replaceAll(
+     "<",
+     "&lt;"
+   )
+
+   .replaceAll(
+     ">",
+     "&gt;"
+   )
+
+   .replaceAll(
+     '"',
+     "&quot;"
+   )
+
+   .replaceAll(
+     "'",
+     "&#039;"
+   );
+
 }
 
+
+// =========================================
+// START
+// =========================================
+
 async function start(){
+
  try{
-   const isAdmin=await checkAdmin();
-   if(!isAdmin)return;
+
+   const isAdmin=
+     await checkAdmin();
+
+
+   if(!isAdmin)
+     return;
+
+
    await loadSubmissions();
+
+
  }catch(error){
+
    console.error(error);
-   document.getElementById("loading").style.display="none";
-   showMessage(error.message,"error");
+
+
+   document.getElementById(
+     "loading"
+   ).style.display="none";
+
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
  }
+
 }
+
+
 start();
+
 </script>
+
 </body>
 </html>
