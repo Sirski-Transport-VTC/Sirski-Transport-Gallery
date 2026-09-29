@@ -1,319 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Sirski Transport — Member Login</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.92)),
-        url("truck01.jpeg") center/cover fixed;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-container {
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .login-box {
-      background: rgba(15, 15, 15, 0.96);
-      border: 1px solid #333;
-      border-radius: 16px;
-      padding: 35px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    }
-
-    .logo {
-      display: block;
-      width: 120px;
-      height: 120px;
-      object-fit: contain;
-      margin: 0 auto 15px;
-    }
-
-    h1 {
-      margin: 5px 0;
-      text-align: center;
-      font-size: 28px;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #aaa;
-      margin-bottom: 30px;
-    }
-
-    .section-title {
-      color: #f5c400;
-      font-size: 18px;
-      margin: 0 0 15px;
-    }
-
-    label {
-      display: block;
-      margin: 15px 0 7px;
-      color: #ddd;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 8px;
-      border: 1px solid #444;
-      background: #222;
-      color: white;
-      font-size: 15px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #f5c400;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #f5c400;
-      color: #111;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #ffd633;
-    }
-
-    .secondary {
-      background: #222;
-      color: white;
-      border: 1px solid #555;
-      margin-top: 12px;
-    }
-
-    .secondary:hover {
-      background: #333;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .divider {
-      height: 1px;
-      background: #333;
-      margin: 28px 0;
-    }
-
-    #message {
-      margin-top: 18px;
-      padding: 10px;
-      border-radius: 7px;
-      display: none;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .success {
-      background: rgba(40, 167, 69, 0.2);
-      color: #7dff9a;
-      border: 1px solid #2e8b46;
-    }
-
-    .error {
-      background: rgba(220, 53, 69, 0.2);
-      color: #ff8995;
-      border: 1px solid #a52a36;
-    }
-
-    .back {
-      display: block;
-      text-align: center;
-      margin-top: 25px;
-      color: #f5c400;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .back:hover {
-      text-decoration: underline;
-    }
-
-    .small-note {
-      margin-top: 20px;
-      color: #777;
-      font-size: 12px;
-      line-height: 1.5;
-      text-align: center;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="login-container">
-
-  <div class="login-box">
-
-    <img
-      src="Sirski_Transport_Logo.png"
-      alt="Sirski Transport Logo"
-      class="logo"
-    >
-
-    <h1>Sirski Transport VTC</h1>
-
-    <div class="subtitle">
-      Project 2 — Member Gallery
-    </div>
-
-
-    <!-- LOGIN -->
-
-    <div id="loginSection">
-
-      <h2 class="section-title">Member Login</h2>
-
-      <form id="loginForm">
-
-        <label for="loginEmail">
-          Sirski Transport Email
-        </label>
-
-        <input
-          type="email"
-          id="loginEmail"
-          placeholder="driver@sirski-transport.com"
-          required
-        >
-
-        <label for="loginPassword">
-          Password
-        </label>
-
-        <input
-          type="password"
-          id="loginPassword"
-          placeholder="Enter your password"
-          required
-        >
-
-        <button type="submit">
-          Member Login
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="secondary"
-        id="showSignup"
-      >
-        Create Member Account
-      </button>
-
-    </div>
-
-
-    <!-- REGISTRATION -->
-
-    <div id="signupSection" class="hidden">
-
-      <h2 class="section-title">Create Member Account</h2>
-
-      <form id="signupForm">
-
-        <label for="sirskiName">
-          Sirski Driver Name
-        </label>
-
-        <input
-          type="text"
-          id="sirskiName"
-          placeholder="Example: Jigg Banez"
-          required
-        >
-
-        <label for="signupEmail">
-          Sirski Transport Email
-        </label>
-
-        <input
-          type="email"
-          id="signupEmail"
-          placeholder="driver@sirski-transport.com"
-          required
-        >
-
-        <label for="signupPassword">
-          Password
-        </label>
-
-        <input
-          type="password"
-          id="signupPassword"
-          placeholder="Minimum 6 characters"
-          minlength="6"
-          required
-        >
-
-        <button type="submit">
-          Create Member Account
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="secondary"
-        id="showLogin"
-      >
-        ← Back to Member Login
-      </button>
-
-    </div>
-
-
-    <div id="message"></div>
-
-    <div class="divider"></div>
-
-    <a href="index.html" class="back">
-      ← Back to Gallery
-    </a>
-
-    <div class="small-note">
-      Sirski Transport — Driven by Passion. Built on Trust.
-      <br>
-      Independent Project 2 — Standalone Truck Gallery
-    </div>
-
-  </div>
-
-</div>
-
-
 <script>
 
   const SUPABASE_URL =
@@ -321,6 +5,7 @@
 
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
 
   const { createClient } = supabase;
 
@@ -396,6 +81,122 @@
 
 
   // =========================================
+  // CHECK EXISTING SESSION
+  // =========================================
+
+  async function checkExistingSession() {
+
+    try {
+
+      const {
+        data: {
+          session
+        },
+        error
+      } =
+        await client.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          "Unable to check existing session:",
+          error
+        );
+
+        return;
+      }
+
+
+      // No existing login session.
+      // Show the normal login page.
+
+      if (!session || !session.user) {
+
+        return;
+      }
+
+
+      // =========================================
+      // CHECK IF EXISTING USER IS GALLERY ADMIN
+      // =========================================
+
+      const {
+        data: admin,
+        error: adminError
+      } =
+        await client
+          .from("gallery_admins")
+          .select("user_id")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+
+      if (adminError) {
+
+        console.error(
+          "Gallery admin check failed:",
+          adminError
+        );
+
+        return;
+      }
+
+
+      // =========================================
+      // EXISTING ADMIN SESSION
+      // =========================================
+
+      if (admin) {
+
+        showMessage(
+          "Administrator session found. Opening Gallery Administration...",
+          "success"
+        );
+
+
+        setTimeout(function() {
+
+          window.location.href =
+            "admin.html";
+
+        }, 500);
+
+
+        return;
+      }
+
+
+      // =========================================
+      // EXISTING MEMBER SESSION
+      // =========================================
+
+      showMessage(
+        "Member session found. Opening member area...",
+        "success"
+      );
+
+
+      setTimeout(function() {
+
+        window.location.href =
+          "submit.html";
+
+      }, 500);
+
+    } catch (error) {
+
+      console.error(
+        "Existing session check failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  // =========================================
   // MEMBER LOGIN
   // =========================================
 
@@ -407,11 +208,13 @@
 
       clearMessage();
 
+
       const email =
         document
           .getElementById("loginEmail")
           .value
           .trim();
+
 
       const password =
         document
@@ -425,7 +228,10 @@
       );
 
 
-      const { data, error } =
+      const {
+        data,
+        error
+      } =
         await client.auth.signInWithPassword({
 
           email: email,
@@ -461,7 +267,10 @@
       // CHECK PROJECT 2 GALLERY ADMIN
       // =========================================
 
-      const { data: admin, error: adminError } =
+      const {
+        data: admin,
+        error: adminError
+      } =
         await client
           .from("gallery_admins")
           .select("user_id")
@@ -476,10 +285,12 @@
           adminError
         );
 
+
         showMessage(
           "Login successful, but administrator access could not be verified. Please try again.",
           "error"
         );
+
 
         await client.auth.signOut();
 
@@ -488,7 +299,7 @@
 
 
       // =========================================
-      // ADMIN → GALLERY ADMINISTRATION
+      // ADMIN → ADMIN DASHBOARD
       // =========================================
 
       if (admin) {
@@ -498,12 +309,14 @@
           "success"
         );
 
+
         setTimeout(function() {
 
           window.location.href =
             "admin.html";
 
         }, 700);
+
 
         return;
       }
@@ -549,11 +362,13 @@
           .value
           .trim();
 
+
       const email =
         document
           .getElementById("signupEmail")
           .value
           .trim();
+
 
       const password =
         document
@@ -590,13 +405,13 @@
 
 
       // =========================================
-      // CREATE AUTH ACCOUNT
-      // Sirski Driver Name is stored in metadata.
-      // The Project 2 database trigger creates
-      // member_profiles automatically.
+      // CREATE PROJECT 2 MEMBER ACCOUNT
       // =========================================
 
-      const { data, error } =
+      const {
+        data,
+        error
+      } =
         await client.auth.signUp({
 
           email: email,
@@ -649,7 +464,11 @@
     }
   );
 
-</script>
 
-</body>
-</html>
+  // =========================================
+  // START EXISTING SESSION CHECK
+  // =========================================
+
+  checkExistingSession();
+
+</script>
