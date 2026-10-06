@@ -17,6 +17,8 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#090909;color:#eee;m
 h1{font-size:42px;margin:10px 0 12px}
 .muted{color:#aaa;line-height:1.6}
 .panel{background:#121212;border:1px solid #303030;border-radius:16px;padding:30px;margin-top:30px}
+.account{background:#0b0b0b;border:1px solid #383838;border-radius:9px;padding:13px;margin:18px 0;color:#ddd}
+.account strong{color:#f5c400}
 .field{margin:18px 0}
 .field label{display:block;margin-bottom:8px;font-weight:700}
 .field input{width:100%;padding:14px;background:#080808;color:#fff;border:1px solid #383838;border-radius:9px;font-size:16px}
@@ -26,6 +28,7 @@ h1{font-size:42px;margin:10px 0 12px}
 .msg.success{display:block;border:1px solid #2c8b48;background:#102417;color:#79e79a}
 .msg.error{display:block;border:1px solid #a93645;background:#2a1115;color:#ff8b98}
 .small{font-size:13px;color:#888;margin-top:18px}
+.hidden{display:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -48,7 +51,11 @@ h1{font-size:42px;margin:10px 0 12px}
   </p>
 
   <section class="panel">
-    <form id="form">
+    <div id="account" class="account hidden">
+      Activating account: <strong id="email"></strong>
+    </div>
+
+    <form id="form" class="hidden">
       <div class="field">
         <label for="password">Create Password</label>
         <input id="password" type="password" minlength="6"
@@ -71,7 +78,9 @@ h1{font-size:42px;margin:10px 0 12px}
     <div id="msg" class="msg"></div>
 
     <p class="small">
-      This password is for your Sirski Transport Project 2 Gallery account.
+      For security, this page clears any existing browser session before applying
+      the invitation session. This prevents an already-signed-in administrator
+      account from being changed accidentally.
     </p>
   </section>
 </main>
@@ -84,6 +93,8 @@ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const form = document.getElementById("form");
 const msg = document.getElementById("msg");
 const button = document.getElementById("submit");
+const account = document.getElementById("account");
+const emailBox = document.getElementById("email");
 
 function showMessage(text, type){
   msg.textContent = text;
@@ -94,23 +105,60 @@ async function prepareInvitationSession(){
   const hash = new URLSearchParams(window.location.hash.substring(1));
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
+  const type = hash.get("type");
 
-  if(accessToken && refreshToken){
-    const {error} = await client.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    });
-    if(error) throw error;
-
-    // Remove sensitive tokens from the visible URL after the session is established.
-    history.replaceState(null, "", window.location.pathname);
+  // An invitation must arrive with its own recovery/invitation session.
+  if(!accessToken || !refreshToken){
+    throw new Error(
+      "This invitation link does not contain a valid activation session. " +
+      "Please ask the Sirski Transport administrator to send a new invitation."
+    );
   }
 
-  const {data, error} = await client.auth.getSession();
+  /*
+   * IMPORTANT:
+   * Clear any existing browser session first.
+   * This prevents an already-signed-in Gallery Admin from remaining
+   * the active user while the member activation password is changed.
+   */
+  await client.auth.signOut({ scope: "local" });
+
+  const { data, error } = await client.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken
+  });
+
   if(error) throw error;
 
-  if(!data.session){
-    throw new Error("This invitation link is missing or has expired. Please ask the Sirski Transport administrator for a new invitation.");
+  if(!data.session || !data.user){
+    throw new Error("The invitation session could not be established.");
+  }
+
+  const activatedEmail = data.user.email || "";
+
+  if(!activatedEmail){
+    throw new Error("The invited account email could not be identified.");
+  }
+
+  // Remove sensitive tokens from the visible URL.
+  history.replaceState(null, "", window.location.pathname);
+
+  // Confirm the browser is now authenticated as the invitation user.
+  const { data: verifyData, error: verifyError } =
+    await client.auth.getUser();
+
+  if(verifyError) throw verifyError;
+
+  if(!verifyData.user || verifyData.user.id !== data.user.id){
+    throw new Error("The invitation account could not be verified.");
+  }
+
+  emailBox.textContent = activatedEmail;
+  account.classList.remove("hidden");
+  form.classList.remove("hidden");
+
+  if(type && type !== "invite"){
+    console.warn("Unexpected invitation type:", type);
   }
 }
 
@@ -119,7 +167,10 @@ async function start(){
     await prepareInvitationSession();
   }catch(error){
     form.style.display = "none";
-    showMessage(error.message || "Unable to activate this invitation.", "error");
+    showMessage(
+      error.message || "Unable to activate this invitation.",
+      "error"
+    );
   }
 }
 
@@ -143,17 +194,39 @@ form.addEventListener("submit", async (event)=>{
   button.textContent = "SETTING PASSWORD...";
 
   try{
-    const {error} = await client.auth.updateUser({password});
+    // Verify the active session immediately before changing the password.
+    const { data: userData, error: userError } =
+      await client.auth.getUser();
+
+    if(userError) throw userError;
+
+    if(!userData.user || !userData.user.email){
+      throw new Error("The invitation session is no longer active.");
+    }
+
+    const { error } = await client.auth.updateUser({ password });
+
     if(error) throw error;
 
-    showMessage("Password created successfully. Redirecting you to Sirski Member Login...", "success");
+    showMessage(
+      "Password created successfully for " +
+      userData.user.email +
+      ". Signing out and opening Member Login...",
+      "success"
+    );
+
+    // Do not leave the newly activated member signed in automatically.
+    await client.auth.signOut({ scope: "local" });
 
     setTimeout(()=>{
       window.location.href = "login.html?activated=1";
     }, 1500);
 
   }catch(error){
-    showMessage(error.message || "Unable to set your password.", "error");
+    showMessage(
+      error.message || "Unable to set your password.",
+      "error"
+    );
     button.disabled = false;
     button.textContent = "SET PASSWORD & CONTINUE";
   }
