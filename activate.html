@@ -78,9 +78,9 @@ h1{font-size:42px;margin:10px 0 12px}
     <div id="msg" class="msg"></div>
 
     <p class="small">
-      For security, this page clears any existing browser session before applying
-      the invitation session. This prevents an already-signed-in administrator
-      account from being changed accidentally.
+      For security, any existing local browser session is cleared before the
+      invitation session is established. The password is changed only for the
+      invited account shown above.
     </p>
   </section>
 </main>
@@ -102,64 +102,78 @@ function showMessage(text, type){
 }
 
 async function prepareInvitationSession(){
+  const url = new URL(window.location.href);
   const hash = new URLSearchParams(window.location.hash.substring(1));
+
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
-  const type = hash.get("type");
 
-  // An invitation must arrive with its own recovery/invitation session.
-  if(!accessToken || !refreshToken){
+  // Supabase invitation links can use a token_hash query parameter.
+  const tokenHash = url.searchParams.get("token_hash");
+  const queryType = url.searchParams.get("type") || hash.get("type");
+
+  // Never allow an existing browser session to be used for activation.
+  await client.auth.signOut({ scope: "local" });
+
+  let user = null;
+
+  // Format 1: access_token + refresh_token in the URL hash.
+  if(accessToken && refreshToken){
+    const { data, error } = await client.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if(error) throw error;
+    user = data.user;
+  }
+  // Format 2: token_hash + type=invite/recovery/etc. in the URL query.
+  else if(tokenHash){
+    const type =
+      queryType === "invite" ||
+      queryType === "recovery" ||
+      queryType === "email" ||
+      queryType === "magiclink"
+        ? queryType
+        : "invite";
+
+    const { data, error } = await client.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: type
+    });
+
+    if(error) throw error;
+    user = data.user;
+  }
+  else{
     throw new Error(
-      "This invitation link does not contain a valid activation session. " +
+      "This invitation link does not contain a valid activation token. " +
       "Please ask the Sirski Transport administrator to send a new invitation."
     );
   }
 
-  /*
-   * IMPORTANT:
-   * Clear any existing browser session first.
-   * This prevents an already-signed-in Gallery Admin from remaining
-   * the active user while the member activation password is changed.
-   */
-  await client.auth.signOut({ scope: "local" });
-
-  const { data, error } = await client.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken
-  });
-
-  if(error) throw error;
-
-  if(!data.session || !data.user){
-    throw new Error("The invitation session could not be established.");
+  if(!user || !user.id || !user.email){
+    throw new Error("The invited member account could not be identified.");
   }
 
-  const activatedEmail = data.user.email || "";
-
-  if(!activatedEmail){
-    throw new Error("The invited account email could not be identified.");
-  }
-
-  // Remove sensitive tokens from the visible URL.
-  history.replaceState(null, "", window.location.pathname);
-
-  // Confirm the browser is now authenticated as the invitation user.
+  // Verify the session after processing the invitation.
   const { data: verifyData, error: verifyError } =
     await client.auth.getUser();
 
   if(verifyError) throw verifyError;
 
-  if(!verifyData.user || verifyData.user.id !== data.user.id){
-    throw new Error("The invitation account could not be verified.");
+  if(!verifyData.user || verifyData.user.id !== user.id){
+    throw new Error(
+      "The invitation account could not be verified."
+    );
   }
 
-  emailBox.textContent = activatedEmail;
+  // Only remove the token-bearing URL after successful verification.
+  history.replaceState(null, "", window.location.pathname);
+
+  emailBox.textContent = verifyData.user.email;
   account.classList.remove("hidden");
   form.classList.remove("hidden");
-
-  if(type && type !== "invite"){
-    console.warn("Unexpected invitation type:", type);
-  }
 }
 
 async function start(){
@@ -194,7 +208,7 @@ form.addEventListener("submit", async (event)=>{
   button.textContent = "SETTING PASSWORD...";
 
   try{
-    // Verify the active session immediately before changing the password.
+    // Final identity check immediately before changing the password.
     const { data: userData, error: userError } =
       await client.auth.getUser();
 
@@ -204,7 +218,9 @@ form.addEventListener("submit", async (event)=>{
       throw new Error("The invitation session is no longer active.");
     }
 
-    const { error } = await client.auth.updateUser({ password });
+    const { error } = await client.auth.updateUser({
+      password: password
+    });
 
     if(error) throw error;
 
@@ -215,7 +231,7 @@ form.addEventListener("submit", async (event)=>{
       "success"
     );
 
-    // Do not leave the newly activated member signed in automatically.
+    // Do not leave the member automatically signed in.
     await client.auth.signOut({ scope: "local" });
 
     setTimeout(()=>{
