@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sirski Transport — Member Dashboard</title>
+<link rel="stylesheet" href="project2-v2.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:28px}
+.member-card{background:#121212;border:1px solid #303030;border-radius:16px;padding:25px;min-height:180px;display:flex;flex-direction:column;justify-content:space-between}
+.member-card h2{margin:0 0 8px;font-size:22px}
+.member-card p{color:#aaa;line-height:1.55;margin:0 0 18px}
+.card-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn.full{width:100%;text-align:center}
+.status-box{margin-top:28px;background:#101010;border:1px solid #303030;border-radius:16px;padding:24px}
+.status-list{display:grid;gap:10px;margin-top:15px}
+.status-item{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px;background:#171717;border:1px solid #292929;border-radius:10px}
+.badge{display:inline-block;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase}
+.badge.pending{background:#665300;color:#ffe783}
+.badge.approved{background:#174f29;color:#a8efbb}
+.badge.rejected{background:#571c1c;color:#ffb4b4}
+.account-bar{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;background:#121212;border:1px solid #303030;border-radius:16px;padding:20px 24px;margin-top:25px}
+.account-name{color:#f5c400;font-size:22px;font-weight:900}
+.small{font-size:13px;color:#888}
+@media(max-width:700px){.dashboard-grid{grid-template-columns:1fr}.wrap{padding:40px 18px}h1{font-size:38px}.status-item{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="nav">
+    <div class="brand">
+      <img src="Sirski_Transport_Logo.png" alt="Sirski Transport">
+      <span>SIRSKI</span> MEMBER DASHBOARD
+    </div>
+    <button id="logoutBtn" class="btn dark" type="button">Logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">SIRSKI TRANSPORT VTC</p>
+  <h1>Member Dashboard</h1>
+  <p class="muted">Manage your gallery submissions and Sirski Transport member account.</p>
+
+  <div id="accountBar" class="account-bar">
+    <div>
+      <div class="small">WELCOME, DRIVER</div>
+      <div id="memberName" class="account-name">Loading...</div>
+    </div>
+    <div id="memberEmail" class="small">Checking account...</div>
+  </div>
+
+  <div id="message" class="msg"></div>
+
+  <section class="dashboard-grid">
+    <div class="member-card">
+      <div>
+        <h2>📸 Upload Screenshot</h2>
+        <p>Submit a new ETS2 screenshot for Admin approval and publication in the Sirski member gallery.</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn full" href="submit.html">UPLOAD SCREENSHOT</a>
+      </div>
+    </div>
+
+    <div class="member-card">
+      <div>
+        <h2>🖼 My Submissions</h2>
+        <p>Check the current status of screenshots you have submitted to the gallery.</p>
+      </div>
+      <div class="card-actions">
+        <button id="refreshBtn" class="btn full" type="button">REFRESH STATUS</button>
+      </div>
+    </div>
+
+    <div class="member-card">
+      <div>
+        <h2>🔑 Change Password</h2>
+        <p>Change the password for your Sirski Transport Gallery account.</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn full" href="member-change-password.html">CHANGE PASSWORD</a>
+      </div>
+    </div>
+
+    <div class="member-card">
+      <div>
+        <h2>🏠 Public Gallery</h2>
+        <p>Return to the public Sirski Transport Project 2 gallery.</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn dark full" href="index.html">VIEW GALLERY</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="status-box">
+    <h2 style="margin:0">My Recent Submissions</h2>
+    <p class="muted" style="margin-bottom:0">Only your own submissions are shown here.</p>
+    <div id="submissionList" class="status-list">
+      <div class="small">Loading your submissions...</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
+const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const memberName=document.getElementById("memberName");
+const memberEmail=document.getElementById("memberEmail");
+const submissionList=document.getElementById("submissionList");
+const message=document.getElementById("message");
+
+let currentUser=null;
+
+function showMessage(text,type){
+  message.textContent=text;
+  message.className="msg "+type;
+}
+
+function escapeHtml(value){
+  return String(value??"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function loadMember(){
+  const {data:{session},error:sessionError}=await client.auth.getSession();
+
+  if(sessionError) throw sessionError;
+  if(!session){
+    window.location.href="login.html";
+    return;
+  }
+
+  currentUser=session.user;
+  memberEmail.textContent=currentUser.email||"";
+
+  // Verify this is a normal member, not an administrator.
+  const {data:admin,error:adminError}=await client
+    .from("gallery_admins")
+    .select("user_id")
+    .eq("user_id",currentUser.id)
+    .maybeSingle();
+
+  if(adminError) throw adminError;
+  if(admin){
+    window.location.href="admin.html";
+    return;
+  }
+
+  const {data:profile,error:profileError}=await client
+    .from("member_profiles")
+    .select("sirski_name")
+    .eq("id",currentUser.id)
+    .single();
+
+  if(profileError||!profile){
+    throw new Error("Your Sirski Driver Name profile could not be found. Please contact the Sirski Transport administrator.");
+  }
+
+  memberName.textContent=profile.sirski_name;
+  await loadSubmissions();
+}
+
+async function loadSubmissions(){
+  submissionList.innerHTML='<div class="small">Loading your submissions...</div>';
+
+  const {data,error}=await client
+    .from("gallery_submissions")
+    .select("id,title,status,created_at")
+    .eq("uploader_id",currentUser.id)
+    .order("created_at",{ascending:false})
+    .limit(20);
+
+  if(error) throw error;
+
+  if(!data||data.length===0){
+    submissionList.innerHTML='<div class="small">You have not submitted any screenshots yet.</div>';
+    return;
+  }
+
+  submissionList.innerHTML=data.map(item=>{
+    const date=item.created_at?new Date(item.created_at).toLocaleString():"-";
+    return `
+      <div class="status-item">
+        <div>
+          <strong>${escapeHtml(item.title||"Untitled")}</strong>
+          <div class="small">${escapeHtml(date)}</div>
+        </div>
+        <span class="badge ${escapeHtml(item.status||"pending")}">${escapeHtml(item.status||"pending")}</span>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("refreshBtn").addEventListener("click",async()=>{
+  try{
+    await loadSubmissions();
+    showMessage("Submission status refreshed.","success");
+  }catch(error){
+    showMessage(error.message||"Unable to load your submissions.","error");
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  await client.auth.signOut();
+  window.location.href="login.html";
+});
+
+loadMember().catch(error=>{
+  console.error(error);
+  showMessage(error.message||"Unable to load the member dashboard.","error");
+});
+</script>
+</body>
+</html>
