@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visitor Management | Sirski Transport Gallery</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root{
+  --yellow:#f5c400;
+  --black:#070707;
+  --panel:#171717;
+  --panel2:#111;
+  --line:rgba(245,196,0,.28);
+  --text:#f5f5f5;
+  --muted:#aaa;
+  --green:#31c46c;
+  --red:#e64a4a;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(245,196,0,.09),transparent 38%),
+    var(--black);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(7,7,7,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
+}
+
+.nav{
+  max-width:1400px;
+  margin:auto;
+  padding:12px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:white;
+  text-decoration:none;
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.brand img{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+}
+
+.brand span{color:var(--yellow)}
+
+.nav-links{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.nav-links a{
+  color:#ddd;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:7px;
+  padding:8px 11px;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:700;
+}
+
+.nav-links a:hover,
+.nav-links a.active{
+  color:#070707;
+  background:var(--yellow);
+  border-color:var(--yellow);
+}
+
+.nav-links a.dark{
+  background:#111;
+}
+
+main{
+  max-width:1400px;
+  margin:auto;
+  padding:45px 20px 70px;
+}
+
+.page-title{
+  margin:0;
+  font-size:clamp(30px,5vw,48px);
+  text-transform:uppercase;
+}
+
+.page-title span{color:var(--yellow)}
+
+.page-subtitle{
+  margin:10px 0 28px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.status{
+  padding:12px 14px;
+  margin-bottom:20px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  background:var(--panel);
+  color:#bbb;
+  font-size:13px;
+}
+
+.status.error{
+  border-color:rgba(230,74,74,.55);
+  color:#ff8c8c;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:22px;
+}
+
+.stat{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:18px;
+}
+
+.stat-label{
+  color:#999;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.stat-value{
+  margin-top:8px;
+  color:var(--yellow);
+  font-size:28px;
+  font-weight:900;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.controls input,
+.controls select{
+  min-height:40px;
+  padding:9px 11px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:7px;
+  background:#0d0d0d;
+  color:#fff;
+  outline:none;
+}
+
+.controls input{
+  flex:1 1 280px;
+}
+
+.controls select{
+  min-width:160px;
+}
+
+.controls input:focus,
+.controls select:focus{
+  border-color:var(--yellow);
+}
+
+.table-wrap{
+  overflow:auto;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:800px;
+}
+
+th,
+td{
+  padding:12px 13px;
+  text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  vertical-align:top;
+}
+
+th{
+  color:var(--yellow);
+  background:#101010;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  position:sticky;
+  top:0;
+}
+
+td{
+  color:#ddd;
+  font-size:13px;
+}
+
+tr:last-child td{border-bottom:0}
+
+.reaction-pill{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#252525;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+}
+
+.empty{
+  padding:35px;
+  text-align:center;
+  color:#888;
+}
+
+footer{
+  border-top:1px solid rgba(255,255,255,.08);
+  text-align:center;
+  padding:28px 20px 40px;
+  color:#777;
+  font-size:13px;
+}
+
+footer strong{color:var(--yellow)}
+
+@media(max-width:900px){
+  .stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:700px){
+  .nav{
+    align-items:flex-start;
+  }
+
+  .brand{
+    font-size:12px;
+  }
+
+  .brand img{
+    width:34px;
+    height:34px;
+  }
+
+  .nav-links a{
+    font-size:10px;
+    padding:7px 8px;
+  }
+
+  main{
+    padding:35px 14px 60px;
+  }
+}
+
+@media(max-width:500px){
+  .stats{
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+  }
+
+  .stat{
+    padding:13px;
+  }
+
+  .stat-value{
+    font-size:22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<nav class="nav">
+
+<a class="brand" href="admin.html">
+  <img src="Sirski_Transport_Logo.png" alt="Sirski Transport VTC Logo">
+  <span>Sirski</span> Visitor Management
+</a>
+
+<div class="nav-links">
+  <a href="index.html">Gallery</a>
+  <a href="member-management.html">Member Management</a>
+  <a href="member-admin-v2.html">Create Member</a>
+  <a class="active" href="visitor-management.html">Visitors</a>
+  <a href="admin-reset-password.html">Change Admin Password</a>
+  <a class="dark" href="#" id="logoutButton">Logout</a>
+</div>
+
+</nav>
+</header>
+
+<main>
+
+<h1 class="page-title">Visitor <span>Management</span></h1>
+
+<p class="page-subtitle">
+  Named guest visitors and their reactions to approved Sirski Transport member screenshots.
+  Visitor names are visible only to Gallery Administrators.
+</p>
+
+<div id="status" class="status">Checking administrator access...</div>
+
+<section class="stats" aria-label="Visitor statistics">
+  <div class="stat">
+    <div class="stat-label">Named Visitors</div>
+    <div class="stat-value" id="visitorCount">—</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label">Guest Reactions</div>
+    <div class="stat-value" id="reactionCount">—</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label">Most Popular</div>
+    <div class="stat-value" id="popularReaction">—</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label">Top Screenshot</div>
+    <div class="stat-value" id="topScreenshot">—</div>
+  </div>
+</section>
+
+<div class="controls">
+  <input
+    id="searchInput"
+    type="search"
+    placeholder="Search visitor or screenshot..."
+    autocomplete="off"
+  >
+
+  <select id="reactionFilter">
+    <option value="">All Reactions</option>
+    <option value="like">❤️ Like</option>
+    <option value="fire">🔥 Fire</option>
+    <option value="truck">🚛 Truck</option>
+    <option value="great">👏 Great</option>
+  </select>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>Visitor</th>
+  <th>Screenshot</th>
+  <th>Submitted By</th>
+  <th>Reaction</th>
+  <th>Date / Time</th>
+</tr>
+</thead>
+<tbody id="visitorRows">
+<tr>
+  <td colspan="5" class="empty">Loading visitor reactions...</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</main>
+
+<footer>
+  <strong>Sirski Transport</strong>
+  — Driven by Passion. Built on Trust.
+  <br>
+  Independent Project 2 — Visitor Management
+</footer>
+
+<script>
+const SUPABASE_URL =
+  "https://siedpigixmtmmihdsqpj.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+const client =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+const REACTION_INFO = {
+  like:{emoji:'❤️',label:'Like'},
+  fire:{emoji:'🔥',label:'Fire'},
+  truck:{emoji:'🚛',label:'Truck'},
+  great:{emoji:'👏',label:'Great'}
+};
+
+let allRows = [];
+
+function escapeHtml(value){
+  return String(value ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function formatDate(value){
+  if(!value) return '—';
+
+  return new Intl.DateTimeFormat(
+    'en-GB',
+    {
+      dateStyle:'medium',
+      timeStyle:'short',
+      timeZone:'Asia/Muscat'
+    }
+  ).format(new Date(value));
+}
+
+function setStatus(message,isError=false){
+  const el = document.getElementById('status');
+  el.textContent = message;
+  el.classList.toggle('error',isError);
+}
+
+async function verifyAdmin(){
+  const {
+    data:{session},
+    error:sessionError
+  } = await client.auth.getSession();
+
+  if(sessionError){
+    throw new Error(
+      `Unable to check login: ${sessionError.message}`
+    );
+  }
+
+  if(!session){
+    window.location.href = 'login.html';
+    return null;
+  }
+
+  const {
+    data:admin,
+    error:adminError
+  } = await client
+    .from('gallery_admins')
+    .select('user_id')
+    .eq('user_id',session.user.id)
+    .maybeSingle();
+
+  if(adminError){
+    throw new Error(
+      `Unable to verify administrator access: ${adminError.message}`
+    );
+  }
+
+  if(!admin){
+    window.location.href = 'member-dashboard.html';
+    return null;
+  }
+
+  return session;
+}
+
+async function loadVisitorData(){
+
+  const {
+    data:visitors,
+    error:visitorError
+  } = await client
+    .from('gallery_visitors')
+    .select('id,visitor_name,created_at,last_seen_at')
+    .order('created_at',{ascending:false});
+
+  if(visitorError){
+    throw new Error(
+      `Unable to load visitors: ${visitorError.message}`
+    );
+  }
+
+  const {
+    data:reactions,
+    error:reactionError
+  } = await client
+    .from('gallery_reactions')
+    .select('id,submission_id,visitor_id,reaction_type,created_at')
+    .not('visitor_id','is',null)
+    .order('created_at',{ascending:false});
+
+  if(reactionError){
+    throw new Error(
+      `Unable to load guest reactions: ${reactionError.message}`
+    );
+  }
+
+  const {
+    data:submissions,
+    error:submissionError
+  } = await client
+    .from('gallery_submissions')
+    .select('id,title,uploader_name,status');
+
+  if(submissionError){
+    throw new Error(
+      `Unable to load screenshots: ${submissionError.message}`
+    );
+  }
+
+  const visitorMap = new Map(
+    (visitors || []).map(visitor=>[
+      visitor.id,
+      visitor
+    ])
+  );
+
+  const submissionMap = new Map(
+    (submissions || []).map(submission=>[
+      submission.id,
+      submission
+    ])
+  );
+
+  allRows = (reactions || []).map(reaction=>{
+    const visitor = visitorMap.get(
+      reaction.visitor_id
+    );
+
+    const submission = submissionMap.get(
+      reaction.submission_id
+    );
+
+    return {
+      ...reaction,
+      visitor_name:
+        visitor?.visitor_name ||
+        'Unknown Visitor',
+      screenshot_title:
+        submission?.title ||
+        'Unknown Screenshot',
+      uploader_name:
+        submission?.uploader_name ||
+        '—'
+    };
+  });
+
+  updateStats(visitors || [],allRows);
+  renderRows();
+}
+
+function updateStats(visitors,rows){
+
+  document.getElementById('visitorCount')
+    .textContent = visitors.length;
+
+  document.getElementById('reactionCount')
+    .textContent = rows.length;
+
+  const reactionCounts = {
+    like:0,
+    fire:0,
+    truck:0,
+    great:0
+  };
+
+  const screenshotCounts = new Map();
+
+  rows.forEach(row=>{
+    if(reactionCounts[row.reaction_type] !== undefined){
+      reactionCounts[row.reaction_type]++;
+    }
+
+    const key = row.submission_id;
+
+    screenshotCounts.set(
+      key,
+      (screenshotCounts.get(key) || 0) + 1
+    );
+  });
+
+  let popularType = '';
+  let popularCount = 0;
+
+  Object.entries(reactionCounts).forEach(
+    ([type,count])=>{
+      if(count > popularCount){
+        popularType = type;
+        popularCount = count;
+      }
+    }
+  );
+
+  const popularEl =
+    document.getElementById('popularReaction');
+
+  popularEl.textContent =
+    popularType && popularCount
+      ? `${REACTION_INFO[popularType].emoji} ${popularCount}`
+      : '—';
+
+  let topSubmission = '';
+  let topCount = 0;
+
+  screenshotCounts.forEach(
+    (count,id)=>{
+      if(count > topCount){
+        topSubmission = id;
+        topCount = count;
+      }
+    }
+  );
+
+  const topRow =
+    rows.find(row=>row.submission_id === topSubmission);
+
+  const topEl =
+    document.getElementById('topScreenshot');
+
+  topEl.textContent =
+    topRow
+      ? `${topCount}`
+      : '—';
+
+  if(topRow){
+    topEl.title =
+      `${topRow.screenshot_title} (${topCount} guest reactions)`;
+  }
+}
+
+function renderRows(){
+
+  const tbody =
+    document.getElementById('visitorRows');
+
+  const search =
+    document.getElementById('searchInput')
+      .value
+      .trim()
+      .toLowerCase();
+
+  const reactionFilter =
+    document.getElementById('reactionFilter')
+      .value;
+
+  const filtered =
+    allRows.filter(row=>{
+
+      const matchesSearch =
+        !search ||
+        row.visitor_name.toLowerCase().includes(search) ||
+        row.screenshot_title.toLowerCase().includes(search) ||
+        row.uploader_name.toLowerCase().includes(search);
+
+      const matchesReaction =
+        !reactionFilter ||
+        row.reaction_type === reactionFilter;
+
+      return matchesSearch && matchesReaction;
+    });
+
+  if(filtered.length === 0){
+    tbody.innerHTML =
+      '<tr><td colspan="5" class="empty">No visitor reactions found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML =
+    filtered.map(row=>{
+
+      const info =
+        REACTION_INFO[row.reaction_type] ||
+        {emoji:'',label:row.reaction_type};
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(row.visitor_name)}</strong></td>
+          <td>${escapeHtml(row.screenshot_title)}</td>
+          <td>${escapeHtml(row.uploader_name)}</td>
+          <td>
+            <span class="reaction-pill">
+              ${info.emoji} ${escapeHtml(info.label)}
+            </span>
+          </td>
+          <td>${escapeHtml(formatDate(row.created_at))}</td>
+        </tr>
+      `;
+    }).join('');
+}
+
+document.getElementById('searchInput')
+  .addEventListener('input',renderRows);
+
+document.getElementById('reactionFilter')
+  .addEventListener('change',renderRows);
+
+document.getElementById('logoutButton')
+  .addEventListener('click',async event=>{
+    event.preventDefault();
+    await client.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+async function start(){
+
+  try{
+    const session = await verifyAdmin();
+
+    if(!session){
+      return;
+    }
+
+    setStatus(
+      `Administrator access verified for ${session.user.email}.`
+    );
+
+    await loadVisitorData();
+
+    setStatus(
+      'Visitor management loaded successfully.'
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    setStatus(
+      error?.message ||
+      'Unable to load visitor management.',
+      true
+    );
+  }
+}
+
+start();
+</script>
+
+</body>
+</html>
