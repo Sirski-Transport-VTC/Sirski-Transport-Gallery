@@ -1165,6 +1165,12 @@ const REACTION_LABELS = {
 
 const GUEST_VISITOR_KEY = 'sirski_gallery_visitor_id';
 
+try{
+  localStorage.removeItem(GUEST_VISITOR_KEY);
+}catch(error){
+  console.error('Unable to clear old visitor ID:',error);
+}
+
 let currentSession = null;
 
 async function getCurrentSession(){
@@ -1189,7 +1195,7 @@ async function getCurrentSession(){
 
 function getStoredVisitorId(){
   try{
-    return localStorage.getItem(GUEST_VISITOR_KEY) || '';
+    return sessionStorage.getItem(GUEST_VISITOR_KEY) || '';
   }catch(error){
     console.error('Unable to read visitor ID:',error);
     return '';
@@ -1198,7 +1204,7 @@ function getStoredVisitorId(){
 
 function storeVisitorId(visitorId){
   try{
-    localStorage.setItem(GUEST_VISITOR_KEY,visitorId);
+    sessionStorage.setItem(GUEST_VISITOR_KEY,visitorId);
   }catch(error){
     console.error('Unable to store visitor ID:',error);
   }
