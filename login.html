@@ -226,72 +226,6 @@
 
       </form>
 
-      <button
-        type="button"
-        class="secondary"
-        id="showSignup"
-      >
-        Create Member Account
-      </button>
-
-    </div>
-
-
-    <!-- REGISTRATION -->
-
-    <div id="signupSection" class="hidden">
-
-      <h2 class="section-title">Create Member Account</h2>
-
-      <form id="signupForm">
-
-        <label for="sirskiName">
-          Sirski Driver Name
-        </label>
-
-        <input
-          type="text"
-          id="sirskiName"
-          placeholder="Example: Jigg Banez"
-          required
-        >
-
-        <label for="signupEmail">
-          Sirski Transport Email
-        </label>
-
-        <input
-          type="email"
-          id="signupEmail"
-          placeholder="driver@sirski-transport.com"
-          required
-        >
-
-        <label for="signupPassword">
-          Password
-        </label>
-
-        <input
-          type="password"
-          id="signupPassword"
-          placeholder="Minimum 6 characters"
-          minlength="6"
-          required
-        >
-
-        <button type="submit">
-          Create Member Account
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="secondary"
-        id="showLogin"
-      >
-        ← Back to Member Login
-      </button>
 
     </div>
 
@@ -345,20 +279,8 @@
   const loginSection =
     document.getElementById("loginSection");
 
-  const signupSection =
-    document.getElementById("signupSection");
-
   const loginForm =
     document.getElementById("loginForm");
-
-  const signupForm =
-    document.getElementById("signupForm");
-
-  const showSignup =
-    document.getElementById("showSignup");
-
-  const showLogin =
-    document.getElementById("showLogin");
 
   const message =
     document.getElementById("message");
@@ -388,42 +310,6 @@
     message.className = "";
 
   }
-
-
-  // =========================================
-  // SHOW SIGNUP
-  // =========================================
-
-  showSignup.addEventListener(
-    "click",
-    function() {
-
-      clearMessage();
-
-      loginSection.classList.add("hidden");
-
-      signupSection.classList.remove("hidden");
-
-    }
-  );
-
-
-  // =========================================
-  // SHOW LOGIN
-  // =========================================
-
-  showLogin.addEventListener(
-    "click",
-    function() {
-
-      clearMessage();
-
-      signupSection.classList.add("hidden");
-
-      loginSection.classList.remove("hidden");
-
-    }
-  );
 
 
   // =========================================
@@ -708,137 +594,6 @@
         },
         1000
       );
-
-    }
-  );
-
-
-  // =========================================
-  // MEMBER REGISTRATION
-  // =========================================
-  //
-  // The Sirski Driver Name is stored in
-  // Supabase Auth metadata.
-  //
-  // Project 2 database trigger automatically
-  // creates the member_profiles record.
-  //
-  // DO NOT manually insert member_profiles here.
-  // =========================================
-
-  signupForm.addEventListener(
-    "submit",
-    async function(event) {
-
-      event.preventDefault();
-
-      clearMessage();
-
-
-      const sirskiName =
-        document
-          .getElementById("sirskiName")
-          .value
-          .trim();
-
-
-      const email =
-        document
-          .getElementById("signupEmail")
-          .value
-          .trim();
-
-
-      const password =
-        document
-          .getElementById("signupPassword")
-          .value;
-
-
-      if (!sirskiName) {
-
-        showMessage(
-          "Please enter your Sirski Driver Name.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      if (password.length < 6) {
-
-        showMessage(
-          "Password must be at least 6 characters.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      showMessage(
-        "Creating your member account...",
-        "success"
-      );
-
-
-      // =========================================
-      // CREATE AUTH ACCOUNT
-      // =========================================
-
-      const {
-        data,
-        error
-      } =
-        await client.auth.signUp({
-
-          email: email,
-
-          password: password,
-
-          options: {
-
-            data: {
-
-              sirski_name: sirskiName
-
-            }
-
-          }
-
-        });
-
-
-      if (error) {
-
-        showMessage(
-          error.message,
-          "error"
-        );
-
-        return;
-      }
-
-
-      if (!data.user) {
-
-        showMessage(
-          "Account creation did not return a user.",
-          "error"
-        );
-
-        return;
-      }
-
-
-      showMessage(
-        "Account created successfully. Please check your Sirski Transport email and confirm your account before logging in.",
-        "success"
-      );
-
-
-      signupForm.reset();
 
     }
   );
