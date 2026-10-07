@@ -111,8 +111,51 @@ async function loadMembers(){
     if(!(await checkAdmin())) return;
 
     const {data,error}=await client.functions.invoke("list-members");
-    if(error) throw error;
-    if(!data?.ok) throw new Error(data?.error || "Unable to load members.");
+
+if(error){
+  try{
+    const response = error.context;
+
+    if(response && typeof response.clone === "function"){
+      const copy = response.clone();
+
+      const contentType =
+        copy.headers.get("content-type") || "";
+
+      if(contentType.includes("application/json")){
+        const json = await copy.json();
+
+        throw new Error(
+          json?.error
+            ? `Step: ${json.step || "unknown"} — ${json.error}`
+            : json?.message ||
+              error.message ||
+              "Unable to load members."
+        );
+      }
+
+      const text = await copy.text();
+
+      if(text.trim()){
+        throw new Error(text.trim());
+      }
+    }
+  }catch(readError){
+    if(readError instanceof Error &&
+       readError.message !== error.message){
+      throw readError;
+    }
+  }
+
+  throw error;
+}
+
+if(!data?.ok){
+  throw new Error(
+    data?.error ||
+    "Unable to load members."
+  );
+}
 
     const members=data.members || [];
     countBox.textContent=members.length+(members.length===1?" member":" members");
