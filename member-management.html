@@ -131,6 +131,30 @@
   background:#1b75ce
 }
 
+.toggle-button{
+  background:#8a5a00;
+  color:#fff
+}
+
+.toggle-button:hover{
+  background:#b87900
+}
+
+.reactivate-button{
+  background:#187a3d;
+  color:#fff
+}
+
+.reactivate-button:hover{
+  background:#22994f
+}
+
+.deactivated-badge{
+  background:#8a5a00;
+  color:#fff;
+  border:1px solid #b87900
+}
+
 .delete-button{
   background:#8b0000;
   color:#fff
@@ -829,10 +853,19 @@ async function loadMembers(){
 
     for(const member of members){
 
-      const active =
+      const confirmed =
         Boolean(
           member.email_confirmed_at
         );
+
+      const deactivated =
+        Boolean(
+          member.is_deactivated
+        );
+
+      const active =
+        confirmed &&
+        !deactivated;
 
 
       const card =
@@ -871,16 +904,20 @@ async function loadMembers(){
 
           <span
             class="badge ${
-              active
-                ? "active"
-                : "pending"
+              deactivated
+                ? "deactivated-badge"
+                : active
+                  ? "active"
+                  : "pending"
             }"
           >
 
             ${
-              active
-                ? "Active"
-                : "Invitation Pending"
+              deactivated
+                ? "Deactivated"
+                : active
+                  ? "Active"
+                  : "Invitation Pending"
             }
 
           </span>
@@ -950,6 +987,34 @@ async function loadMembers(){
           >
             🔑 Reset Password
           </button>
+
+
+          ${
+            confirmed
+              ? `
+                <button
+                  type="button"
+                  class="action-button ${
+                    deactivated
+                      ? "reactivate-button"
+                      : "toggle-button"
+                  }"
+                  onclick="toggleMemberStatus(
+                    '${escapeJs(member.id)}',
+                    '${escapeJs(member.sirski_name || "Unnamed Member")}',
+                    '${escapeJs(member.email || "-")}',
+                    '${deactivated ? "reactivate" : "deactivate"}'
+                  )"
+                >
+                  ${
+                    deactivated
+                      ? "▶️ Reactivate Member"
+                      : "⏸️ Deactivate Member"
+                  }
+                </button>
+              `
+              : ""
+          }
 
 
           <button
@@ -1211,6 +1276,113 @@ showMessage(
 
     button.textContent =
       "Reset Password";
+
+  }
+
+}
+
+
+/* =========================================
+   DEACTIVATE / REACTIVATE MEMBER
+========================================= */
+
+async function toggleMemberStatus(
+  id,
+  name,
+  email,
+  action
+){
+
+  const isDeactivating =
+    action === "deactivate";
+
+  const actionText =
+    isDeactivating
+      ? "deactivate"
+      : "reactivate";
+
+  const confirmed =
+    confirm(
+      isDeactivating
+        ? "Are you sure you want to deactivate " +
+          name +
+          "?\n\nThe member will no longer be able to log in, but their account, profile, password, and gallery history will be preserved."
+        : "Are you sure you want to reactivate " +
+          name +
+          "?\n\nThe member will be allowed to log in again."
+    );
+
+  if(!confirmed)
+    return;
+
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await client.functions.invoke(
+        "admin-toggle-member",
+        {
+          body:{
+            member_id:id,
+            action:action
+          }
+        }
+      );
+
+
+    if(error){
+
+      const errorText =
+        await getFunctionError(
+          error,
+          data
+        );
+
+      throw new Error(errorText);
+
+    }
+
+
+    if(!data?.ok){
+
+      throw new Error(
+        data?.error ||
+        "Unable to " +
+        actionText +
+        " member."
+      );
+
+    }
+
+
+    showMessage(
+      name +
+      (
+        isDeactivating
+          ? " was deactivated successfully."
+          : " was reactivated successfully."
+      ),
+      "success"
+    );
+
+
+    await loadMembers();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      error.message ||
+      "Unable to " +
+      actionText +
+      " member.",
+      "error"
+    );
 
   }
 
