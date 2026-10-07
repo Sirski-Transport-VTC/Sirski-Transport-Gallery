@@ -1087,41 +1087,41 @@ async function createVisitor(visitorName){
     throw new Error('Name must be 50 characters or fewer.');
   }
 
+  /*
+    Generate the visitor ID in the browser so the public visitor
+    does not need SELECT permission on gallery_visitors.
+  */
+  const visitorId = crypto.randomUUID();
+
   const {
-    data,
     error
   } = await client
     .from('gallery_visitors')
     .insert({
+      id:visitorId,
       visitor_name:cleanName
-    })
-    .select('id,visitor_name')
-    .single();
+    });
 
   if(error){
     throw error;
   }
 
-  storeVisitorId(data.id);
-  return data;
+  storeVisitorId(visitorId);
+
+  return {
+    id:visitorId,
+    visitor_name:cleanName
+  };
 }
 
 async function ensureGuestVisitor(name){
   const storedId = getStoredVisitorId();
 
   if(storedId){
-    const {
-      data,
-      error
-    } = await client
-      .from('gallery_visitors')
-      .select('id,visitor_name')
-      .eq('id',storedId)
-      .maybeSingle();
-
-    if(!error && data){
-      return data;
-    }
+    return {
+      id:storedId,
+      visitor_name:String(name || '').trim()
+    };
   }
 
   return await createVisitor(name);
