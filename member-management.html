@@ -4,197 +4,1503 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Member Management | Sirski Transport</title>
+
 <link rel="stylesheet" href="project2-v2.css">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-.member-list{display:grid;gap:14px;margin-top:20px}
-.member-card{background:#121212;border:1px solid #303030;border-radius:14px;padding:20px}
-.member-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
-.member-name{font-size:21px;font-weight:900;color:#f5c400}
-.member-email{color:#aaa;margin-top:5px}
-.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
-.meta-box{background:#0a0a0a;border:1px solid #292929;border-radius:9px;padding:12px}
-.meta-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px}
-.meta-value{margin-top:5px;font-weight:700}
-.badge{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:900;text-transform:uppercase}
-.badge.active{background:#174f29;color:#a8efbb}
-.badge.pending{background:#665300;color:#ffe783}
-.count{color:#aaa;margin-top:8px}
-.empty{text-align:center;padding:40px;color:#aaa;border:1px dashed #444;border-radius:12px}
-@media(max-width:700px){.meta{grid-template-columns:1fr}.member-head{flex-direction:column}}
+
+.member-list{
+  display:grid;
+  gap:14px;
+  margin-top:20px
+}
+
+.member-card{
+  background:#121212;
+  border:1px solid #303030;
+  border-radius:14px;
+  padding:20px
+}
+
+.member-head{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:flex-start
+}
+
+.member-name{
+  font-size:21px;
+  font-weight:900;
+  color:#f5c400
+}
+
+.member-email{
+  color:#aaa;
+  margin-top:5px
+}
+
+.meta{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:18px
+}
+
+.meta-box{
+  background:#0a0a0a;
+  border:1px solid #292929;
+  border-radius:9px;
+  padding:12px
+}
+
+.meta-label{
+  font-size:11px;
+  color:#888;
+  text-transform:uppercase;
+  letter-spacing:1px
+}
+
+.meta-value{
+  margin-top:5px;
+  font-weight:700
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase
+}
+
+.badge.active{
+  background:#174f29;
+  color:#a8efbb
+}
+
+.badge.pending{
+  background:#665300;
+  color:#ffe783
+}
+
+.count{
+  color:#aaa;
+  margin-top:8px
+}
+
+.empty{
+  text-align:center;
+  padding:40px;
+  color:#aaa;
+  border:1px dashed #444;
+  border-radius:12px
+}
+
+/* =========================================
+   MEMBER ACTIONS
+   ========================================= */
+
+.member-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #292929
+}
+
+.action-button{
+  border:0;
+  border-radius:8px;
+  padding:10px 14px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:13px
+}
+
+.reset-button{
+  background:#145ea8;
+  color:#fff
+}
+
+.reset-button:hover{
+  background:#1b75ce
+}
+
+.delete-button{
+  background:#8b0000;
+  color:#fff
+}
+
+.delete-button:hover{
+  background:#b00000
+}
+
+.action-button:disabled{
+  opacity:.55;
+  cursor:not-allowed
+}
+
+/* =========================================
+   MODAL
+   ========================================= */
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:9999
+}
+
+.modal-overlay.show{
+  display:flex
+}
+
+.modal{
+  width:min(480px,100%);
+  background:#151515;
+  border:1px solid #3a3a3a;
+  border-radius:16px;
+  padding:25px;
+  box-shadow:0 20px 80px rgba(0,0,0,.7)
+}
+
+.modal h2{
+  margin-top:0;
+  color:#f5c400
+}
+
+.modal-member{
+  background:#0b0b0b;
+  border:1px solid #292929;
+  border-radius:10px;
+  padding:13px;
+  margin:15px 0
+}
+
+.modal-member-name{
+  font-weight:900;
+  color:#f5c400
+}
+
+.modal-member-email{
+  color:#aaa;
+  margin-top:4px;
+  font-size:13px
+}
+
+.modal label{
+  display:block;
+  margin-top:14px;
+  font-size:12px;
+  font-weight:900;
+  color:#ccc
+}
+
+.modal input{
+  width:100%;
+  margin-top:7px;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #3a3a3a;
+  background:#080808;
+  color:#fff;
+  font-size:15px
+}
+
+.modal-buttons{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  margin-top:20px
+}
+
+.modal-cancel{
+  background:#444;
+  color:#fff
+}
+
+.modal-confirm{
+  background:#f5c400;
+  color:#111
+}
+
+.modal-delete{
+  background:#b00020;
+  color:#fff
+}
+
+.modal-message{
+  min-height:20px;
+  margin-top:12px;
+  font-size:13px;
+  color:#ffb4b4
+}
+
+/* =========================================
+   DELETE WARNING
+   ========================================= */
+
+.delete-warning-box{
+  background:#321414;
+  border:1px solid #7b2a2a;
+  color:#ffcccc;
+  padding:14px;
+  border-radius:9px;
+  line-height:1.5;
+  font-size:13px
+}
+
+@media(max-width:700px){
+
+  .meta{
+    grid-template-columns:1fr
+  }
+
+  .member-head{
+    flex-direction:column
+  }
+
+  .member-actions{
+    flex-direction:column
+  }
+
+  .action-button{
+    width:100%
+  }
+
+}
+
 </style>
 </head>
+
 <body>
+
 <header class="top">
+
   <div class="nav">
+
     <div class="brand">
-      <img src="Sirski_Transport_Logo.png" alt="Sirski Transport">
+
+      <img
+        src="Sirski_Transport_Logo.png"
+        alt="Sirski Transport"
+      >
+
       <span>SIRSKI</span> MEMBER MANAGEMENT
+
     </div>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="member-admin-v2.html">Create Member</a>
-      <a class="btn dark" href="admin.html">Gallery Admin</a>
+
+      <a
+        class="btn"
+        href="member-admin-v2.html"
+      >
+        Create Member
+      </a>
+
+      <a
+        class="btn dark"
+        href="admin.html"
+      >
+        Gallery Admin
+      </a>
+
     </div>
+
   </div>
+
 </header>
 
+
 <main class="wrap">
+
   <p class="eyebrow">MASTER ADMIN</p>
+
   <h1>Member Management</h1>
-  <p class="muted">View Sirski Transport members created through Project 2. Authentication credentials are never displayed here.</p>
+
+  <p class="muted">
+    View and manage Sirski Transport members created through Project 2.
+    Authentication credentials are never displayed here.
+  </p>
+
 
   <div id="message" class="msg"></div>
 
-  <div class="panel" style="margin-top:25px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
+
+  <div
+    class="panel"
+    style="margin-top:25px"
+  >
+
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:15px;
+        flex-wrap:wrap
+      "
+    >
+
       <div>
+
         <strong>Registered Members</strong>
-        <div id="count" class="count">Loading...</div>
+
+        <div
+          id="count"
+          class="count"
+        >
+          Loading...
+        </div>
+
       </div>
-      <button class="btn dark" id="refreshButton" type="button">Refresh Members</button>
+
+
+      <button
+        class="btn dark"
+        id="refreshButton"
+        type="button"
+      >
+        Refresh Members
+      </button>
+
     </div>
 
-    <div id="loading" style="text-align:center;color:#aaa;padding:30px 0">Loading members...</div>
-    <div id="members" class="member-list"></div>
+
+    <div
+      id="loading"
+      style="
+        text-align:center;
+        color:#aaa;
+        padding:30px 0
+      "
+    >
+      Loading members...
+    </div>
+
+
+    <div
+      id="members"
+      class="member-list"
+    ></div>
+
   </div>
+
 </main>
 
-<script>
-const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
-const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const message=document.getElementById("message");
-const loading=document.getElementById("loading");
-const membersBox=document.getElementById("members");
-const countBox=document.getElementById("count");
+<!-- =========================================
+     RESET PASSWORD MODAL
+========================================= -->
+
+<div
+  id="resetModal"
+  class="modal-overlay"
+>
+
+  <div class="modal">
+
+    <h2>Reset Member Password</h2>
+
+    <div class="modal-member">
+
+      <div
+        id="resetMemberName"
+        class="modal-member-name"
+      >
+        -
+      </div>
+
+      <div
+        id="resetMemberEmail"
+        class="modal-member-email"
+      >
+        -
+      </div>
+
+    </div>
+
+
+    <label for="newPassword">
+      New Password
+    </label>
+
+    <input
+      id="newPassword"
+      type="password"
+      autocomplete="new-password"
+      placeholder="At least 8 characters"
+    >
+
+
+    <label for="confirmPassword">
+      Confirm New Password
+    </label>
+
+    <input
+      id="confirmPassword"
+      type="password"
+      autocomplete="new-password"
+      placeholder="Repeat the password"
+    >
+
+
+    <div
+      id="resetModalMessage"
+      class="modal-message"
+    ></div>
+
+
+    <div class="modal-buttons">
+
+      <button
+        type="button"
+        class="action-button modal-cancel"
+        id="resetCancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="action-button modal-confirm"
+        id="resetConfirm"
+      >
+        Reset Password
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================
+     DELETE MEMBER MODAL
+========================================= -->
+
+<div
+  id="deleteModal"
+  class="modal-overlay"
+>
+
+  <div class="modal">
+
+    <h2>Delete Member</h2>
+
+    <div class="delete-warning-box">
+
+      <strong>⚠️ Permanent Action</strong>
+
+      <br><br>
+
+      You are about to permanently delete this
+      member's login account and member profile.
+
+      <br><br>
+
+      This action cannot be undone.
+
+    </div>
+
+
+    <div class="modal-member">
+
+      <div
+        id="deleteMemberName"
+        class="modal-member-name"
+      >
+        -
+      </div>
+
+      <div
+        id="deleteMemberEmail"
+        class="modal-member-email"
+      >
+        -
+      </div>
+
+    </div>
+
+
+    <div
+      id="deleteModalMessage"
+      class="modal-message"
+    ></div>
+
+
+    <div class="modal-buttons">
+
+      <button
+        type="button"
+        class="action-button modal-cancel"
+        id="deleteCancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="action-button modal-delete"
+        id="deleteConfirm"
+      >
+        Delete Member
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://siedpigixmtmmihdsqpj.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+
+const client =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+const message =
+  document.getElementById("message");
+
+const loading =
+  document.getElementById("loading");
+
+const membersBox =
+  document.getElementById("members");
+
+const countBox =
+  document.getElementById("count");
+
+
+/* =========================================
+   CURRENT MEMBER SELECTION
+========================================= */
+
+let selectedMember = null;
+
+
+/* =========================================
+   MESSAGE
+========================================= */
 
 function showMessage(text,type){
-  message.textContent=text;
-  message.className="msg "+type;
+
+  message.textContent = text;
+
+  message.className =
+    "msg " + (type || "");
+
 }
+
+
+/* =========================================
+   DATE FORMAT
+========================================= */
 
 function formatDate(value){
-  if(!value) return "-";
-  const d=new Date(value);
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleString();
+
+  if(!value)
+    return "-";
+
+  const d =
+    new Date(value);
+
+  return Number.isNaN(d.getTime())
+    ? "-"
+    : d.toLocaleString();
+
 }
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
 function escapeHtml(value){
+
   return String(value ?? "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
+
 }
+
+
+/* =========================================
+   READ EDGE FUNCTION ERROR
+========================================= */
+
+async function getFunctionError(error,data){
+
+  if(data?.error)
+    return data.error;
+
+  if(error){
+
+    try{
+
+      if(error.context){
+
+        const response =
+          error.context;
+
+        const body =
+          await response.json();
+
+        if(body?.error)
+          return body.error;
+
+      }
+
+    }catch(e){
+
+      console.error(e);
+
+    }
+
+    return error.message ||
+      "The server request failed.";
+
+  }
+
+  return "The request failed.";
+
+}
+
+
+/* =========================================
+   CHECK ADMIN
+========================================= */
 
 async function checkAdmin(){
-  const {data:{session},error:sessionError}=await client.auth.getSession();
-  if(sessionError) throw sessionError;
-  if(!session){window.location.href="login.html";return false;}
 
-  const {data:admin,error:adminError}=await client
-    .from("gallery_admins").select("user_id")
-    .eq("user_id",session.user.id).maybeSingle();
+  const {
+    data:{session},
+    error:sessionError
+  } =
+    await client.auth.getSession();
 
-  if(adminError) throw adminError;
-  if(!admin) throw new Error("Administrator access required.");
+
+  if(sessionError)
+    throw sessionError;
+
+
+  if(!session){
+
+    window.location.href =
+      "login.html";
+
+    return false;
+
+  }
+
+
+  const {
+    data:admin,
+    error:adminError
+  } =
+    await client
+      .from("gallery_admins")
+      .select("user_id")
+      .eq(
+        "user_id",
+        session.user.id
+      )
+      .maybeSingle();
+
+
+  if(adminError)
+    throw adminError;
+
+
+  if(!admin)
+    throw new Error(
+      "Administrator access required."
+    );
+
+
   return true;
+
 }
+
+
+/* =========================================
+   LOAD MEMBERS
+========================================= */
 
 async function loadMembers(){
+
   try{
-    message.className="msg";
-    loading.style.display="block";
-    membersBox.innerHTML="";
-    countBox.textContent="Loading...";
 
-    if(!(await checkAdmin())) return;
+    message.className = "msg";
 
-    const {data,error}=await client.functions.invoke("list-members");
+    loading.style.display =
+      "block";
 
-if(error){
-  try{
-    const response = error.context;
+    membersBox.innerHTML = "";
 
-    if(response && typeof response.clone === "function"){
-      const copy = response.clone();
+    countBox.textContent =
+      "Loading...";
 
-      const contentType =
-        copy.headers.get("content-type") || "";
 
-      if(contentType.includes("application/json")){
-        const json = await copy.json();
+    if(!(await checkAdmin()))
+      return;
 
-        throw new Error(
-          json?.error
-            ? `Step: ${json.step || "unknown"} — ${json.error}`
-            : json?.message ||
-              error.message ||
-              "Unable to load members."
+
+    const {
+      data,
+      error
+    } =
+      await client.functions.invoke(
+        "list-members"
+      );
+
+
+    if(error){
+
+      const errorText =
+        await getFunctionError(
+          error,
+          data
         );
-      }
 
-      const text = await copy.text();
+      throw new Error(errorText);
 
-      if(text.trim()){
-        throw new Error(text.trim());
-      }
     }
-  }catch(readError){
-    if(readError instanceof Error &&
-       readError.message !== error.message){
-      throw readError;
-    }
-  }
 
-  throw error;
-}
 
-if(!data?.ok){
-  throw new Error(
-    data?.error ||
-    "Unable to load members."
-  );
-}
+    if(!data?.ok)
+      throw new Error(
+        data?.error ||
+        "Unable to load members."
+      );
 
-    const members=data.members || [];
-    countBox.textContent=members.length+(members.length===1?" member":" members");
-    loading.style.display="none";
+
+    const members =
+      data.members || [];
+
+
+    countBox.textContent =
+      members.length +
+      (
+        members.length === 1
+          ? " member"
+          : " members"
+      );
+
+
+    loading.style.display =
+      "none";
+
 
     if(!members.length){
-      membersBox.innerHTML='<div class="empty">No member profiles found.</div>';
+
+      membersBox.innerHTML =
+        '<div class="empty">No member profiles found.</div>';
+
       return;
+
     }
+
 
     for(const member of members){
-      const active=Boolean(member.email_confirmed_at);
-      const card=document.createElement("div");
-      card.className="member-card";
-      card.innerHTML=`
+
+      const active =
+        Boolean(
+          member.email_confirmed_at
+        );
+
+
+      const card =
+        document.createElement("div");
+
+
+      card.className =
+        "member-card";
+
+
+      card.innerHTML = `
+
         <div class="member-head">
+
           <div>
-            <div class="member-name">${escapeHtml(member.sirski_name || "Unnamed Member")}</div>
-            <div class="member-email">${escapeHtml(member.email || "-")}</div>
+
+            <div class="member-name">
+
+              ${escapeHtml(
+                member.sirski_name ||
+                "Unnamed Member"
+              )}
+
+            </div>
+
+            <div class="member-email">
+
+              ${escapeHtml(
+                member.email || "-"
+              )}
+
+            </div>
+
           </div>
-          <span class="badge ${active?"active":"pending"}">${active?"Active":"Invitation Pending"}</span>
+
+
+          <span
+            class="badge ${
+              active
+                ? "active"
+                : "pending"
+            }"
+          >
+
+            ${
+              active
+                ? "Active"
+                : "Invitation Pending"
+            }
+
+          </span>
+
         </div>
+
+
         <div class="meta">
-          <div class="meta-box"><div class="meta-label">Member Created</div><div class="meta-value">${formatDate(member.created_at)}</div></div>
-          <div class="meta-box"><div class="meta-label">Email Confirmed</div><div class="meta-value">${formatDate(member.email_confirmed_at)}</div></div>
-          <div class="meta-box"><div class="meta-label">Last Sign In</div><div class="meta-value">${formatDate(member.last_sign_in_at)}</div></div>
-        </div>`;
+
+          <div class="meta-box">
+
+            <div class="meta-label">
+              Member Created
+            </div>
+
+            <div class="meta-value">
+              ${formatDate(
+                member.created_at
+              )}
+            </div>
+
+          </div>
+
+
+          <div class="meta-box">
+
+            <div class="meta-label">
+              Email Confirmed
+            </div>
+
+            <div class="meta-value">
+              ${formatDate(
+                member.email_confirmed_at
+              )}
+            </div>
+
+          </div>
+
+
+          <div class="meta-box">
+
+            <div class="meta-label">
+              Last Sign In
+            </div>
+
+            <div class="meta-value">
+              ${formatDate(
+                member.last_sign_in_at
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="member-actions">
+
+          <button
+            type="button"
+            class="action-button reset-button"
+            onclick="openResetModal(
+              '${escapeJs(member.id)}',
+              '${escapeJs(member.sirski_name || "Unnamed Member")}',
+              '${escapeJs(member.email || "-")}'
+            )"
+          >
+            🔑 Reset Password
+          </button>
+
+
+          <button
+            type="button"
+            class="action-button delete-button"
+            onclick="openDeleteModal(
+              '${escapeJs(member.id)}',
+              '${escapeJs(member.sirski_name || "Unnamed Member")}',
+              '${escapeJs(member.email || "-")}'
+            )"
+          >
+            🗑️ Delete Member
+          </button>
+
+        </div>
+
+      `;
+
+
       membersBox.appendChild(card);
+
     }
+
+
   }catch(error){
+
     console.error(error);
-    loading.style.display="none";
-    countBox.textContent="Unable to load";
-    showMessage(error.message || "Unable to load members.","error");
+
+    loading.style.display =
+      "none";
+
+    countBox.textContent =
+      "Unable to load";
+
+    showMessage(
+      error.message ||
+      "Unable to load members.",
+      "error"
+    );
+
   }
+
 }
 
-document.getElementById("refreshButton").addEventListener("click",loadMembers);
+
+/* =========================================
+   ESCAPE JAVASCRIPT VALUES
+========================================= */
+
+function escapeJs(value){
+
+  return String(value ?? "")
+    .replaceAll("\\","\\\\")
+    .replaceAll("'","\\'")
+    .replaceAll("\n","\\n")
+    .replaceAll("\r","\\r");
+
+}
+
+
+/* =========================================
+   RESET PASSWORD MODAL
+========================================= */
+
+function openResetModal(
+  id,
+  name,
+  email
+){
+
+  selectedMember = {
+    id,
+    name,
+    email
+  };
+
+
+  document.getElementById(
+    "resetMemberName"
+  ).textContent = name;
+
+
+  document.getElementById(
+    "resetMemberEmail"
+  ).textContent = email;
+
+
+  document.getElementById(
+    "newPassword"
+  ).value = "";
+
+
+  document.getElementById(
+    "confirmPassword"
+  ).value = "";
+
+
+  document.getElementById(
+    "resetModalMessage"
+  ).textContent = "";
+
+
+  document.getElementById(
+    "resetModal"
+  ).classList.add("show");
+
+
+  setTimeout(() => {
+
+    document.getElementById(
+      "newPassword"
+    ).focus();
+
+  },100);
+
+}
+
+
+function closeResetModal(){
+
+  document.getElementById(
+    "resetModal"
+  ).classList.remove("show");
+
+  selectedMember = null;
+
+}
+
+
+/* =========================================
+   RESET PASSWORD
+========================================= */
+
+async function resetMemberPassword(){
+
+  if(!selectedMember)
+    return;
+
+
+  const newPassword =
+    document.getElementById(
+      "newPassword"
+    ).value;
+
+
+  const confirmPassword =
+    document.getElementById(
+      "confirmPassword"
+    ).value;
+
+
+  const modalMessage =
+    document.getElementById(
+      "resetModalMessage"
+    );
+
+
+  const button =
+    document.getElementById(
+      "resetConfirm"
+    );
+
+
+  modalMessage.textContent = "";
+
+
+  if(newPassword.length < 8){
+
+    modalMessage.textContent =
+      "Password must be at least 8 characters.";
+
+    return;
+
+  }
+
+
+  if(newPassword !== confirmPassword){
+
+    modalMessage.textContent =
+      "The passwords do not match.";
+
+    return;
+
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Resetting...";
+
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await client.functions.invoke(
+        "admin-reset-member",
+        {
+          body:{
+            member_id:
+              selectedMember.id,
+
+            new_password:
+              newPassword
+          }
+        }
+      );
+
+
+    if(error){
+
+      const errorText =
+        await getFunctionError(
+          error,
+          data
+        );
+
+      throw new Error(errorText);
+
+    }
+
+
+    if(!data?.ok){
+
+      throw new Error(
+        data?.error ||
+        "Unable to reset password."
+      );
+
+    }
+
+
+    const memberName = selectedMember.name;
+
+closeResetModal();
+
+showMessage(
+  "Password for " +
+  memberName +
+  " was reset successfully.",
+  "success"
+);
+
+
+  }catch(error){
+
+    console.error(error);
+
+    modalMessage.textContent =
+      error.message ||
+      "Unable to reset password.";
+
+  }finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Reset Password";
+
+  }
+
+}
+
+
+/* =========================================
+   DELETE MODAL
+========================================= */
+
+function openDeleteModal(
+  id,
+  name,
+  email
+){
+
+  selectedMember = {
+    id,
+    name,
+    email
+  };
+
+
+  document.getElementById(
+    "deleteMemberName"
+  ).textContent = name;
+
+
+  document.getElementById(
+    "deleteMemberEmail"
+  ).textContent = email;
+
+
+  document.getElementById(
+    "deleteModalMessage"
+  ).textContent = "";
+
+
+  document.getElementById(
+    "deleteModal"
+  ).classList.add("show");
+
+}
+
+
+function closeDeleteModal(){
+
+  document.getElementById(
+    "deleteModal"
+  ).classList.remove("show");
+
+  selectedMember = null;
+
+}
+
+
+/* =========================================
+   DELETE MEMBER
+========================================= */
+
+async function deleteMember(){
+
+  if(!selectedMember)
+    return;
+
+
+  const name =
+    selectedMember.name;
+
+
+  const modalMessage =
+    document.getElementById(
+      "deleteModalMessage"
+    );
+
+
+  const button =
+    document.getElementById(
+      "deleteConfirm"
+    );
+
+
+  const confirmed =
+    confirm(
+      "Are you absolutely sure you want to permanently delete " +
+      name +
+      "?"
+    );
+
+
+  if(!confirmed)
+    return;
+
+
+  modalMessage.textContent = "";
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Deleting...";
+
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await client.functions.invoke(
+        "admin-delete-member",
+        {
+          body:{
+            member_id:
+              selectedMember.id
+          }
+        }
+      );
+
+
+    if(error){
+
+      const errorText =
+        await getFunctionError(
+          error,
+          data
+        );
+
+      throw new Error(errorText);
+
+    }
+
+
+    if(!data?.ok){
+
+      throw new Error(
+        data?.error ||
+        "Unable to delete member."
+      );
+
+    }
+
+
+    closeDeleteModal();
+
+
+    showMessage(
+      name +
+      " was deleted successfully.",
+      "success"
+    );
+
+
+    await loadMembers();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    modalMessage.textContent =
+      error.message ||
+      "Unable to delete member.";
+
+  }finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "Delete Member";
+
+  }
+
+}
+
+
+/* =========================================
+   BUTTON EVENTS
+========================================= */
+
+document
+  .getElementById(
+    "refreshButton"
+  )
+  .addEventListener(
+    "click",
+    loadMembers
+  );
+
+
+document
+  .getElementById(
+    "resetCancel"
+  )
+  .addEventListener(
+    "click",
+    closeResetModal
+  );
+
+
+document
+  .getElementById(
+    "resetConfirm"
+  )
+  .addEventListener(
+    "click",
+    resetMemberPassword
+  );
+
+
+document
+  .getElementById(
+    "deleteCancel"
+  )
+  .addEventListener(
+    "click",
+    closeDeleteModal
+  );
+
+
+document
+  .getElementById(
+    "deleteConfirm"
+  )
+  .addEventListener(
+    "click",
+    deleteMember
+  );
+
+
+/* =========================================
+   CLOSE MODALS WHEN CLICKING OUTSIDE
+========================================= */
+
+document
+  .getElementById(
+    "resetModal"
+  )
+  .addEventListener(
+    "click",
+    function(event){
+
+      if(event.target === this)
+        closeResetModal();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "deleteModal"
+  )
+  .addEventListener(
+    "click",
+    function(event){
+
+      if(event.target === this)
+        closeDeleteModal();
+
+    }
+  );
+
+
+/* =========================================
+   ESC KEY
+========================================= */
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(event.key !== "Escape")
+      return;
+
+
+    closeResetModal();
+    closeDeleteModal();
+
+  }
+);
+
+
+/* =========================================
+   START
+========================================= */
+
 loadMembers();
+
 </script>
+
 </body>
 </html>
