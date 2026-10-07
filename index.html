@@ -318,6 +318,16 @@ cursor:pointer
   border-color:var(--yellow);
 }
 
+.reaction-button.admin-disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.reaction-button.admin-disabled:hover{
+  border-color:rgba(255,255,255,.12);
+  color:#ddd;
+}
+
 .reaction-count{
   margin-top:9px;
   color:#999;
@@ -983,7 +993,7 @@ submission.title ||
 
 gallery.appendChild(card);
 
-setupReactions(
+await setupReactions(
   card,
   submission.id
 );
@@ -1127,72 +1137,59 @@ async function ensureGuestVisitor(name){
   return await createVisitor(name);
 }
 
-async function loadReactionState(submissionId, card){
-  const countBox = card.querySelector('.reaction-count');
+let cachedAdminCheckUserId = null;
+let cachedAdminCheckResult = false;
 
+async function isCurrentUserGalleryAdmin(session){
+  if(!session) return false;
+  if(cachedAdminCheckUserId === session.user.id) return cachedAdminCheckResult;
   try{
-    const {
-      data,
-      error
-    } = await client
-      .from('gallery_reactions')
-      .select('reaction_type,user_id,visitor_id')
-      .eq('submission_id',submissionId);
-
+    const {data,error}=await client.from('gallery_admins').select('user_id').eq('user_id',session.user.id).maybeSingle();
     if(error){
-      throw error;
+      console.error('Unable to check Gallery Admin role:',error);
+      cachedAdminCheckUserId=session.user.id;
+      cachedAdminCheckResult=false;
+      return false;
     }
+    cachedAdminCheckUserId=session.user.id;
+    cachedAdminCheckResult=!!data;
+    return !!data;
+  }catch(error){
+    console.error('Unable to check Gallery Admin role:',error);
+    cachedAdminCheckUserId=session.user.id;
+    cachedAdminCheckResult=false;
+    return false;
+  }
+}
 
-    const counts = {
-      like:0,
-      fire:0,
-      truck:0,
-      great:0
-    };
-
-    const session = await getCurrentSession();
-    const visitorId = getStoredVisitorId();
-
-    const mine = new Set();
-
-    for(const reaction of (data || [])){
-      if(counts[reaction.reaction_type] !== undefined){
-        counts[reaction.reaction_type]++;
-      }
-
-      if(
-        session &&
-        reaction.user_id === session.user.id
-      ){
-        mine.add(reaction.reaction_type);
-      }
-
-      if(
-        !session &&
-        visitorId &&
-        reaction.visitor_id === visitorId
-      ){
-        mine.add(reaction.reaction_type);
-      }
+async function loadReactionState(submissionId,card){
+  const countBox=card.querySelector('.reaction-count');
+  try{
+    const {data,error}=await client.from('gallery_reactions').select('reaction_type,user_id,visitor_id').eq('submission_id',submissionId);
+    if(error) throw error;
+    const counts={like:0,fire:0,truck:0,great:0};
+    const session=await getCurrentSession();
+    const isAdmin=await isCurrentUserGalleryAdmin(session);
+    const visitorId=getStoredVisitorId();
+    const mine=new Set();
+    for(const reaction of (data||[])){
+      if(counts[reaction.reaction_type] !== undefined) counts[reaction.reaction_type]++;
+      if(!isAdmin && session && reaction.user_id === session.user.id) mine.add(reaction.reaction_type);
+      if(!isAdmin && !session && visitorId && reaction.visitor_id === visitorId) mine.add(reaction.reaction_type);
     }
-
     card.querySelectorAll('.reaction-button').forEach(button=>{
-      const type = button.dataset.reaction;
-      button.classList.toggle('active',mine.has(type));
-      button.setAttribute(
-        'aria-pressed',
-        mine.has(type) ? 'true' : 'false'
-      );
+      const active=!isAdmin && mine.has(button.dataset.reaction);
+      button.classList.toggle('active',active);
+      button.classList.toggle('admin-disabled',isAdmin);
+      button.disabled=isAdmin;
+      button.setAttribute('aria-pressed',active?'true':'false');
+      if(isAdmin) button.title='Gallery Administrators can view reactions but cannot change them.';
+      else button.removeAttribute('title');
     });
-
-    countBox.innerHTML = Object.keys(REACTION_TYPES)
-      .map(type=>`<span>${REACTION_TYPES[type]} ${REACTION_LABELS[type]}: ${counts[type]}</span>`)
-      .join('');
-
+    countBox.innerHTML=Object.keys(REACTION_TYPES).map(type=>`<span>${REACTION_TYPES[type]} ${REACTION_LABELS[type]}: ${counts[type]}</span>`).join('') + (isAdmin ? '<span>🛡️ Admin view only</span>' : '');
   }catch(error){
     console.error('Unable to load reactions:',error);
-    countBox.textContent =
-      'Reactions unavailable right now.';
+    countBox.textContent='Reactions unavailable right now.';
   }
 }
 
@@ -1243,7 +1240,11 @@ async function addReaction(submissionId,reactionType,actor){
 }
 
 async function reactToSubmission(submissionId,reactionType,card){
-  const session = await getCurrentSession();
+    const session = await getCurrentSession();
+
+  if(session && await isCurrentUserGalleryAdmin(session)){
+    return;
+  }
 
   if(session){
     const button = card.querySelector(
@@ -1376,59 +1377,28 @@ async function submitGuestReaction(submissionId,card){
   }
 }
 
-function setupReactions(card,submissionId){
-  card
-    .querySelectorAll('.reaction-button')
-    .forEach(button=>{
-      button.addEventListener(
-        'click',
-        ()=>{
-          reactToSubmission(
-            submissionId,
-            button.dataset.reaction,
-            card
-          );
-        }
-      );
-    });
-
-  const submitButton =
-    card.querySelector('.guest-reaction-submit');
-
-  if(submitButton){
-    submitButton.addEventListener(
-      'click',
-      ()=>{
-        submitGuestReaction(
-          submissionId,
-          card
-        );
-      }
-    );
-  }
-
-  const input = card.querySelector(
-    '.guest-reaction-form input'
-  );
-
-  if(input){
+async function setupReactions(card,submissionId){
+  const session=await getCurrentSession();
+  const isAdmin=await isCurrentUserGalleryAdmin(session);
+  card.querySelectorAll('.reaction-button').forEach(button=>{
+    if(isAdmin){
+      button.disabled=true;
+      button.classList.add('admin-disabled');
+      button.title='Gallery Administrators can view reactions but cannot change them.';
+      return;
+    }
+    button.addEventListener('click',()=>reactToSubmission(submissionId,button.dataset.reaction,card));
+  });
+  const submitButton=card.querySelector('.guest-reaction-submit');
+  if(submitButton && !isAdmin) submitButton.addEventListener('click',()=>submitGuestReaction(submissionId,card));
+  const input=card.querySelector('.guest-reaction-form input');
+  if(input && !isAdmin){
     input.addEventListener('keydown',event=>{
-      if(event.key === 'Enter'){
-        event.preventDefault();
-        submitGuestReaction(
-          submissionId,
-          card
-        );
-      }
+      if(event.key==='Enter'){ event.preventDefault(); submitGuestReaction(submissionId,card); }
     });
   }
-
-  loadReactionState(
-    submissionId,
-    card
-  );
+  await loadReactionState(submissionId,card);
 }
-
 
 function escapeHtml(value){
 
