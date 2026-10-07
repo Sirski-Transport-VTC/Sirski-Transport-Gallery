@@ -365,6 +365,7 @@ Main Website ↗
 </a>
 
 <a
+id="memberNav"
 class="member-login"
 href="login.html"
 >
@@ -630,6 +631,46 @@ document.body.style.overflow='';
 
 
 /* =========================
+   MEMBER NAVIGATION
+========================= */
+
+async function updateMemberNavigation(){
+  const memberNav = document.getElementById('memberNav');
+
+  if(!memberNav){
+    return;
+  }
+
+  try{
+    const {
+      data:{session},
+      error
+    } = await client.auth.getSession();
+
+    if(error){
+      throw error;
+    }
+
+    if(session){
+      memberNav.href = 'member-dashboard.html';
+      memberNav.textContent = 'Member Dashboard';
+    }else{
+      memberNav.href = 'login.html';
+      memberNav.textContent = 'Member Login';
+    }
+  }catch(error){
+    console.error(
+      'Unable to check member session:',
+      error
+    );
+
+    memberNav.href = 'login.html';
+    memberNav.textContent = 'Member Login';
+  }
+}
+
+
+/* =========================
    APPROVED MEMBER GALLERY
 ========================= */
 
@@ -825,6 +866,7 @@ return String(value)
 }
 
 
+updateMemberNavigation();
 loadApprovedMemberGallery();
 
 </script>
