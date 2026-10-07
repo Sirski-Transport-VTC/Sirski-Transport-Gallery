@@ -282,6 +282,121 @@ font-size:27px;
 cursor:pointer
 }
 
+/* REACTIONS */
+
+.reactions{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.reaction-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.reaction-button{
+  border:1px solid rgba(255,255,255,.12);
+  background:#111;
+  color:#ddd;
+  border-radius:7px;
+  padding:7px 9px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.reaction-button:hover{
+  border-color:var(--yellow);
+  color:var(--yellow);
+}
+
+.reaction-button.active{
+  background:var(--yellow);
+  color:#070707;
+  border-color:var(--yellow);
+}
+
+.reaction-count{
+  margin-top:9px;
+  color:#999;
+  font-size:12px;
+  line-height:1.6;
+}
+
+.reaction-count span{
+  display:inline-block;
+  margin-right:10px;
+}
+
+.guest-reaction-form{
+  display:none;
+  margin-top:10px;
+  padding:10px;
+  background:#101010;
+  border:1px solid rgba(245,196,0,.25);
+  border-radius:8px;
+}
+
+.guest-reaction-form.open{
+  display:block;
+}
+
+.guest-reaction-form p{
+  margin:0 0 8px;
+  color:#bbb;
+  font-size:12px;
+}
+
+.guest-reaction-form-row{
+  display:flex;
+  gap:7px;
+}
+
+.guest-reaction-form input{
+  flex:1;
+  min-width:0;
+  padding:8px 9px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:6px;
+  background:#080808;
+  color:#fff;
+  outline:none;
+}
+
+.guest-reaction-form input:focus{
+  border-color:var(--yellow);
+}
+
+.guest-reaction-form button{
+  border:1px solid var(--yellow);
+  border-radius:6px;
+  background:var(--yellow);
+  color:#070707;
+  padding:8px 11px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.reaction-message{
+  margin-top:7px;
+  color:#aaa;
+  font-size:11px;
+}
+
+@media(max-width:430px){
+  .reaction-button{
+    font-size:11px;
+    padding:6px 8px;
+  }
+
+  .guest-reaction-form-row{
+    flex-direction:column;
+  }
+}
+
 /* MOBILE */
 
 @media(max-width:760px){
@@ -809,6 +924,33 @@ Submitted by:
 <span>${safeUploader}</span>
 </div>
 
+<div class="reactions" data-submission-id="${submission.id}">
+  <div class="reaction-buttons">
+    <button type="button" class="reaction-button" data-reaction="like">❤️ Like</button>
+    <button type="button" class="reaction-button" data-reaction="fire">🔥 Fire</button>
+    <button type="button" class="reaction-button" data-reaction="truck">🚛 Truck</button>
+    <button type="button" class="reaction-button" data-reaction="great">👏 Great</button>
+  </div>
+
+  <div class="reaction-count" aria-live="polite">
+    Loading reactions...
+  </div>
+
+  <div class="guest-reaction-form">
+    <p>Enter your name to react:</p>
+    <div class="guest-reaction-form-row">
+      <input
+        type="text"
+        maxlength="50"
+        placeholder="Your name"
+        autocomplete="name"
+      >
+      <button type="button" class="guest-reaction-submit">React</button>
+    </div>
+    <div class="reaction-message"></div>
+  </div>
+</div>
+
 </figcaption>
 
 `;
@@ -837,6 +979,11 @@ submission.title ||
 
 gallery.appendChild(card);
 
+setupReactions(
+  card,
+  submission.id
+);
+
 }
 
 }catch(error){
@@ -851,6 +998,431 @@ status.textContent =
 
 }
 
+}
+
+
+
+/* =========================
+   MEMBER GALLERY REACTIONS
+   ========================= */
+
+const REACTION_TYPES = {
+  like: '❤️',
+  fire: '🔥',
+  truck: '🚛',
+  great: '👏'
+};
+
+const REACTION_LABELS = {
+  like: 'Like',
+  fire: 'Fire',
+  truck: 'Truck',
+  great: 'Great'
+};
+
+const GUEST_VISITOR_KEY = 'sirski_gallery_visitor_id';
+
+let currentSession = null;
+
+async function getCurrentSession(){
+  try{
+    const {
+      data:{session},
+      error
+    } = await client.auth.getSession();
+
+    if(error){
+      console.error('Unable to get current session:',error);
+      return null;
+    }
+
+    currentSession = session || null;
+    return currentSession;
+  }catch(error){
+    console.error('Unable to get current session:',error);
+    return null;
+  }
+}
+
+function getStoredVisitorId(){
+  try{
+    return localStorage.getItem(GUEST_VISITOR_KEY) || '';
+  }catch(error){
+    console.error('Unable to read visitor ID:',error);
+    return '';
+  }
+}
+
+function storeVisitorId(visitorId){
+  try{
+    localStorage.setItem(GUEST_VISITOR_KEY,visitorId);
+  }catch(error){
+    console.error('Unable to store visitor ID:',error);
+  }
+}
+
+function clearGuestForms(card){
+  const form = card.querySelector('.guest-reaction-form');
+  if(form){
+    form.classList.remove('open');
+    const input = form.querySelector('input');
+    const message = form.querySelector('.reaction-message');
+    if(input) input.value = '';
+    if(message) message.textContent = '';
+  }
+}
+
+async function createVisitor(visitorName){
+  const cleanName = String(visitorName || '').trim();
+
+  if(cleanName.length < 2){
+    throw new Error('Name must be at least 2 characters.');
+  }
+
+  if(cleanName.length > 50){
+    throw new Error('Name must be 50 characters or fewer.');
+  }
+
+  const {
+    data,
+    error
+  } = await client
+    .from('gallery_visitors')
+    .insert({
+      visitor_name:cleanName
+    })
+    .select('id,visitor_name')
+    .single();
+
+  if(error){
+    throw error;
+  }
+
+  storeVisitorId(data.id);
+  return data;
+}
+
+async function ensureGuestVisitor(name){
+  const storedId = getStoredVisitorId();
+
+  if(storedId){
+    const {
+      data,
+      error
+    } = await client
+      .from('gallery_visitors')
+      .select('id,visitor_name')
+      .eq('id',storedId)
+      .maybeSingle();
+
+    if(!error && data){
+      return data;
+    }
+  }
+
+  return await createVisitor(name);
+}
+
+async function loadReactionState(submissionId, card){
+  const countBox = card.querySelector('.reaction-count');
+
+  try{
+    const {
+      data,
+      error
+    } = await client
+      .from('gallery_reactions')
+      .select('reaction_type,user_id,visitor_id')
+      .eq('submission_id',submissionId);
+
+    if(error){
+      throw error;
+    }
+
+    const counts = {
+      like:0,
+      fire:0,
+      truck:0,
+      great:0
+    };
+
+    const session = await getCurrentSession();
+    const visitorId = getStoredVisitorId();
+
+    const mine = new Set();
+
+    for(const reaction of (data || [])){
+      if(counts[reaction.reaction_type] !== undefined){
+        counts[reaction.reaction_type]++;
+      }
+
+      if(
+        session &&
+        reaction.user_id === session.user.id
+      ){
+        mine.add(reaction.reaction_type);
+      }
+
+      if(
+        !session &&
+        visitorId &&
+        reaction.visitor_id === visitorId
+      ){
+        mine.add(reaction.reaction_type);
+      }
+    }
+
+    card.querySelectorAll('.reaction-button').forEach(button=>{
+      const type = button.dataset.reaction;
+      button.classList.toggle('active',mine.has(type));
+      button.setAttribute(
+        'aria-pressed',
+        mine.has(type) ? 'true' : 'false'
+      );
+    });
+
+    countBox.innerHTML = Object.keys(REACTION_TYPES)
+      .map(type=>`<span>${REACTION_TYPES[type]} ${REACTION_LABELS[type]}: ${counts[type]}</span>`)
+      .join('');
+
+  }catch(error){
+    console.error('Unable to load reactions:',error);
+    countBox.textContent =
+      'Reactions unavailable right now.';
+  }
+}
+
+async function removeReaction(submissionId,reactionType,actor){
+  let query = client
+    .from('gallery_reactions')
+    .delete()
+    .eq('submission_id',submissionId)
+    .eq('reaction_type',reactionType);
+
+  if(actor.type === 'member'){
+    query = query
+      .eq('user_id',actor.id)
+      .is('visitor_id',null);
+  }else{
+    query = query
+      .eq('visitor_id',actor.id)
+      .is('user_id',null);
+  }
+
+  const {error} = await query;
+
+  if(error){
+    throw error;
+  }
+}
+
+async function addReaction(submissionId,reactionType,actor){
+  const row = {
+    submission_id:submissionId,
+    reaction_type:reactionType,
+    user_id:actor.type === 'member' ? actor.id : null,
+    visitor_id:actor.type === 'guest' ? actor.id : null
+  };
+
+  const {
+    error
+  } = await client
+    .from('gallery_reactions')
+    .insert(row);
+
+  if(error){
+    if(error.code === '23505'){
+      throw new Error('You already gave this reaction.');
+    }
+    throw error;
+  }
+}
+
+async function reactToSubmission(submissionId,reactionType,card){
+  const session = await getCurrentSession();
+
+  if(session){
+    const button = card.querySelector(
+      `.reaction-button[data-reaction="${reactionType}"]`
+    );
+
+    const wasActive = button.classList.contains('active');
+
+    try{
+      if(wasActive){
+        await removeReaction(
+          submissionId,
+          reactionType,
+          {type:'member',id:session.user.id}
+        );
+      }else{
+        await addReaction(
+          submissionId,
+          reactionType,
+          {type:'member',id:session.user.id}
+        );
+      }
+
+      await loadReactionState(submissionId,card);
+    }catch(error){
+      console.error('Unable to update member reaction:',error);
+      alert(error?.message || 'Unable to update your reaction.');
+    }
+
+    return;
+  }
+
+  const visitorId = getStoredVisitorId();
+
+  if(visitorId){
+    const button = card.querySelector(
+      `.reaction-button[data-reaction="${reactionType}"]`
+    );
+
+    const wasActive = button.classList.contains('active');
+
+    try{
+      if(wasActive){
+        await removeReaction(
+          submissionId,
+          reactionType,
+          {type:'guest',id:visitorId}
+        );
+
+        await loadReactionState(submissionId,card);
+      }else{
+        await addReaction(
+          submissionId,
+          reactionType,
+          {type:'guest',id:visitorId}
+        );
+
+        await loadReactionState(submissionId,card);
+      }
+    }catch(error){
+      console.error('Unable to update guest reaction:',error);
+      alert(error?.message || 'Unable to update your reaction.');
+    }
+
+    return;
+  }
+
+  const form = card.querySelector('.guest-reaction-form');
+
+  if(form){
+    form.classList.add('open');
+    form.dataset.pendingReaction = reactionType;
+
+    const input = form.querySelector('input');
+    if(input){
+      input.focus();
+    }
+  }
+}
+
+async function submitGuestReaction(submissionId,card){
+  const form = card.querySelector('.guest-reaction-form');
+
+  if(!form){
+    return;
+  }
+
+  const input = form.querySelector('input');
+  const message = form.querySelector('.reaction-message');
+  const reactionType = form.dataset.pendingReaction;
+
+  if(!reactionType){
+    return;
+  }
+
+  const name = String(input?.value || '').trim();
+
+  if(name.length < 2){
+    message.textContent = 'Please enter at least 2 characters.';
+    return;
+  }
+
+  if(name.length > 50){
+    message.textContent = 'Name must be 50 characters or fewer.';
+    return;
+  }
+
+  try{
+    message.textContent = 'Saving...';
+
+    const visitor = await ensureGuestVisitor(name);
+
+    await addReaction(
+      submissionId,
+      reactionType,
+      {type:'guest',id:visitor.id}
+    );
+
+    form.classList.remove('open');
+    form.dataset.pendingReaction = '';
+    input.value = '';
+    message.textContent = '';
+
+    await loadReactionState(submissionId,card);
+
+  }catch(error){
+    console.error('Unable to save guest reaction:',error);
+    message.textContent =
+      error?.message || 'Unable to save your reaction.';
+  }
+}
+
+function setupReactions(card,submissionId){
+  card
+    .querySelectorAll('.reaction-button')
+    .forEach(button=>{
+      button.addEventListener(
+        'click',
+        ()=>{
+          reactToSubmission(
+            submissionId,
+            button.dataset.reaction,
+            card
+          );
+        }
+      );
+    });
+
+  const submitButton =
+    card.querySelector('.guest-reaction-submit');
+
+  if(submitButton){
+    submitButton.addEventListener(
+      'click',
+      ()=>{
+        submitGuestReaction(
+          submissionId,
+          card
+        );
+      }
+    );
+  }
+
+  const input = card.querySelector(
+    '.guest-reaction-form input'
+  );
+
+  if(input){
+    input.addEventListener('keydown',event=>{
+      if(event.key === 'Enter'){
+        event.preventDefault();
+        submitGuestReaction(
+          submissionId,
+          card
+        );
+      }
+    });
+  }
+
+  loadReactionState(
+    submissionId,
+    card
+  );
 }
 
 
