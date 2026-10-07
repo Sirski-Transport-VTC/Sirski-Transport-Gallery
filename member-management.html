@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Member Management | Sirski Transport</title>
+<link rel="stylesheet" href="project2-v2.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.member-list{display:grid;gap:14px;margin-top:20px}
+.member-card{background:#121212;border:1px solid #303030;border-radius:14px;padding:20px}
+.member-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.member-name{font-size:21px;font-weight:900;color:#f5c400}
+.member-email{color:#aaa;margin-top:5px}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.meta-box{background:#0a0a0a;border:1px solid #292929;border-radius:9px;padding:12px}
+.meta-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.meta-value{margin-top:5px;font-weight:700}
+.badge{display:inline-block;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:900;text-transform:uppercase}
+.badge.active{background:#174f29;color:#a8efbb}
+.badge.pending{background:#665300;color:#ffe783}
+.count{color:#aaa;margin-top:8px}
+.empty{text-align:center;padding:40px;color:#aaa;border:1px dashed #444;border-radius:12px}
+@media(max-width:700px){.meta{grid-template-columns:1fr}.member-head{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="nav">
+    <div class="brand">
+      <img src="Sirski_Transport_Logo.png" alt="Sirski Transport">
+      <span>SIRSKI</span> MEMBER MANAGEMENT
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="member-admin-v2.html">Create Member</a>
+      <a class="btn dark" href="admin.html">Gallery Admin</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">MASTER ADMIN</p>
+  <h1>Member Management</h1>
+  <p class="muted">View Sirski Transport members created through Project 2. Authentication credentials are never displayed here.</p>
+
+  <div id="message" class="msg"></div>
+
+  <div class="panel" style="margin-top:25px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
+      <div>
+        <strong>Registered Members</strong>
+        <div id="count" class="count">Loading...</div>
+      </div>
+      <button class="btn dark" id="refreshButton" type="button">Refresh Members</button>
+    </div>
+
+    <div id="loading" style="text-align:center;color:#aaa;padding:30px 0">Loading members...</div>
+    <div id="members" class="member-list"></div>
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
+const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const message=document.getElementById("message");
+const loading=document.getElementById("loading");
+const membersBox=document.getElementById("members");
+const countBox=document.getElementById("count");
+
+function showMessage(text,type){
+  message.textContent=text;
+  message.className="msg "+type;
+}
+
+function formatDate(value){
+  if(!value) return "-";
+  const d=new Date(value);
+  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleString();
+}
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function checkAdmin(){
+  const {data:{session},error:sessionError}=await client.auth.getSession();
+  if(sessionError) throw sessionError;
+  if(!session){window.location.href="login.html";return false;}
+
+  const {data:admin,error:adminError}=await client
+    .from("gallery_admins").select("user_id")
+    .eq("user_id",session.user.id).maybeSingle();
+
+  if(adminError) throw adminError;
+  if(!admin) throw new Error("Administrator access required.");
+  return true;
+}
+
+async function loadMembers(){
+  try{
+    message.className="msg";
+    loading.style.display="block";
+    membersBox.innerHTML="";
+    countBox.textContent="Loading...";
+
+    if(!(await checkAdmin())) return;
+
+    const {data,error}=await client.functions.invoke("list-members");
+    if(error) throw error;
+    if(!data?.ok) throw new Error(data?.error || "Unable to load members.");
+
+    const members=data.members || [];
+    countBox.textContent=members.length+(members.length===1?" member":" members");
+    loading.style.display="none";
+
+    if(!members.length){
+      membersBox.innerHTML='<div class="empty">No member profiles found.</div>';
+      return;
+    }
+
+    for(const member of members){
+      const active=Boolean(member.email_confirmed_at);
+      const card=document.createElement("div");
+      card.className="member-card";
+      card.innerHTML=`
+        <div class="member-head">
+          <div>
+            <div class="member-name">${escapeHtml(member.sirski_name || "Unnamed Member")}</div>
+            <div class="member-email">${escapeHtml(member.email || "-")}</div>
+          </div>
+          <span class="badge ${active?"active":"pending"}">${active?"Active":"Invitation Pending"}</span>
+        </div>
+        <div class="meta">
+          <div class="meta-box"><div class="meta-label">Member Created</div><div class="meta-value">${formatDate(member.created_at)}</div></div>
+          <div class="meta-box"><div class="meta-label">Email Confirmed</div><div class="meta-value">${formatDate(member.email_confirmed_at)}</div></div>
+          <div class="meta-box"><div class="meta-label">Last Sign In</div><div class="meta-value">${formatDate(member.last_sign_in_at)}</div></div>
+        </div>`;
+      membersBox.appendChild(card);
+    }
+  }catch(error){
+    console.error(error);
+    loading.style.display="none";
+    countBox.textContent="Unable to load";
+    showMessage(error.message || "Unable to load members.","error");
+  }
+}
+
+document.getElementById("refreshButton").addEventListener("click",loadMembers);
+loadMembers();
+</script>
+</body>
+</html>
