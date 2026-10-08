@@ -2,968 +2,1123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visitor Management | Sirski Transport Gallery</title>
-<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sirski Transport Gallery - Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-:root{
-  --yellow:#f5c400;
-  --black:#070707;
-  --panel:#171717;
-  --panel2:#111;
-  --line:rgba(245,196,0,.28);
-  --text:#f5f5f5;
-  --muted:#aaa;
-  --green:#31c46c;
-  --red:#e64a4a;
-}
-
 *{box-sizing:border-box}
 
 body{
   margin:0;
-  background:
-    radial-gradient(circle at 50% 0%,rgba(245,196,0,.09),transparent 38%),
-    var(--black);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:Arial,sans-serif;
+  background:#111;
+  color:#fff
 }
 
 header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  background:rgba(7,7,7,.96);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(8px);
+  background:#000;
+  border-bottom:2px solid #f5c400;
+  padding:20px;
+  text-align:center
 }
 
-.nav{
-  max-width:1400px;
-  margin:auto;
-  padding:12px 20px;
+header img{
+  width:180px;
+  max-width:70%
+}
+
+h1{
+  margin:8px 0
+}
+
+.container{
+  width:min(1100px,94%);
+  margin:30px auto
+}
+
+.topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:15px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  color:white;
-  text-decoration:none;
-  font-weight:900;
-  letter-spacing:1px;
-  text-transform:uppercase;
-}
-
-.brand img{
-  width:40px;
-  height:40px;
-  object-fit:contain;
-}
-
-.brand span{color:var(--yellow)}
-
-.nav-links{
-  display:flex;
-  gap:8px;
+  gap:12px;
   flex-wrap:wrap;
-  justify-content:flex-end;
+  margin-bottom:25px
 }
 
-.nav-links a{
-  color:#ddd;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:7px;
-  padding:8px 11px;
+.buttons,
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+button,
+.link-button{
+  border:0;
+  border-radius:6px;
+  padding:10px 16px;
+  font-weight:bold;
+  cursor:pointer;
   text-decoration:none;
-  font-size:12px;
-  font-weight:700;
+  display:inline-block
 }
 
-.nav-links a:hover,
-.nav-links a.active{
-  color:#070707;
-  background:var(--yellow);
-  border-color:var(--yellow);
+.back{
+  background:#555;
+  color:#fff
 }
 
-.nav-links a.dark{
-  background:#111;
+.logout{
+  background:#b00020;
+  color:#fff
 }
 
-main{
-  max-width:1400px;
-  margin:auto;
-  padding:45px 20px 70px;
+.admin-password{
+  background:#f5c400;
+  color:#111
 }
 
-.page-title{
-  margin:0;
-  font-size:clamp(30px,5vw,48px);
-  text-transform:uppercase;
+.admin-password:hover{
+  background:#ffd633
 }
 
-.page-title span{color:var(--yellow)}
+.approve{
+  background:#1b8f3a;
+  color:#fff
+}
 
-.page-subtitle{
-  margin:10px 0 28px;
-  color:var(--muted);
-  line-height:1.6;
+.reject{
+  background:#c62828;
+  color:#fff
+}
+
+/* NEW: Delete approved screenshot */
+.delete{
+  background:#8b0000;
+  color:#fff
+}
+
+.delete:hover{
+  background:#b00000
+}
+
+#message{
+  display:none;
+  padding:14px;
+  border-radius:7px;
+  margin-bottom:20px;
+  font-weight:bold
+}
+
+#message.success{
+  display:block;
+  background:#173d22;
+  border:1px solid #2e9d50;
+  color:#baf5c8
+}
+
+#message.error{
+  display:block;
+  background:#451b1b;
+  border:1px solid #d44;
+  color:#ffc1c1
+}
+
+#loading{
+  text-align:center;
+  color:#bbb;
+  padding:30px
+}
+
+.submission{
+  background:#1b1b1b;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:22px
+}
+
+.submission-grid{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:22px
+}
+
+.preview{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:8px;
+  background:#000;
+  border:1px solid #333
+}
+
+.details h2{
+  margin-top:0
+}
+
+.detail{
+  margin:7px 0;
+  line-height:1.45
+}
+
+.label{
+  color:#f5c400;
+  font-weight:bold
 }
 
 .status{
-  padding:12px 14px;
-  margin-bottom:20px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;
-  background:var(--panel);
-  color:#bbb;
-  font-size:13px;
-}
-
-.status.error{
-  border-color:rgba(230,74,74,.55);
-  color:#ff8c8c;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:14px;
-  margin-bottom:22px;
-}
-
-.stat{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-  padding:18px;
-}
-
-.stat-label{
-  color:#999;
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-.stat-value{
-  margin-top:8px;
-  color:var(--yellow);
-  font-size:28px;
-  font-weight:900;
-}
-
-.controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:18px;
-}
-
-.controls input,
-.controls select{
-  min-height:40px;
-  padding:9px 11px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:7px;
-  background:#0d0d0d;
-  color:#fff;
-  outline:none;
-}
-
-.controls input{
-  flex:1 1 280px;
-}
-
-.controls select{
-  min-width:160px;
-}
-
-.controls input:focus,
-.controls select:focus{
-  border-color:var(--yellow);
-}
-
-.table-wrap{
-  overflow:auto;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:800px;
-}
-
-th,
-td{
-  padding:12px 13px;
-  text-align:left;
-  border-bottom:1px solid rgba(255,255,255,.07);
-  vertical-align:top;
-}
-
-th{
-  color:var(--yellow);
-  background:#101010;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  position:sticky;
-  top:0;
-}
-
-td{
-  color:#ddd;
-  font-size:13px;
-}
-
-tr:last-child td{border-bottom:0}
-
-.reaction-pill{
   display:inline-block;
-  padding:5px 8px;
-  border-radius:999px;
-  background:#252525;
-  color:#fff;
+  padding:5px 10px;
+  border-radius:20px;
   font-size:12px;
-  font-weight:800;
+  font-weight:bold;
+  text-transform:uppercase
+}
+
+.status.pending{
+  background:#665300;
+  color:#ffe783
+}
+
+.status.approved{
+  background:#174f29;
+  color:#a8efbb
+}
+
+.status.rejected{
+  background:#571c1c;
+  color:#ffb4b4
 }
 
 .empty{
-  padding:35px;
   text-align:center;
-  color:#888;
+  padding:50px 20px;
+  color:#aaa;
+  border:1px dashed #444;
+  border-radius:10px
 }
 
-footer{
-  border-top:1px solid rgba(255,255,255,.08);
-  text-align:center;
-  padding:28px 20px 40px;
-  color:#777;
+.delete-warning{
+  color:#ffb4b4;
   font-size:13px;
-}
-
-footer strong{color:var(--yellow)}
-
-@media(max-width:900px){
-  .stats{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
+  margin-top:8px
 }
 
 @media(max-width:700px){
-  .nav{
-    align-items:flex-start;
+  .submission-grid{
+    grid-template-columns:1fr
   }
 
-  .brand{
-    font-size:12px;
-  }
-
-  .brand img{
-    width:34px;
-    height:34px;
-  }
-
-  .nav-links a{
-    font-size:10px;
-    padding:7px 8px;
-  }
-
-  main{
-    padding:35px 14px 60px;
+  h1{
+    font-size:23px
   }
 }
-
-@media(max-width:500px){
-  .stats{
-    grid-template-columns:1fr 1fr;
-    gap:9px;
-  }
-
-  .stat{
-    padding:13px;
-  }
-
-  .stat-value{
-    font-size:22px;
-  }
-}
-
-/* MASTER ADMIN VISITOR CLEANUP */
-.cleanup-panel{
-  margin:22px 0;
-  padding:20px;
-  background:var(--panel);
-  border:1px solid rgba(245,196,0,.28);
-  border-radius:10px;
-}
-.cleanup-panel h2{
-  margin:0 0 8px;
-  color:var(--yellow);
-  font-size:18px;
-}
-.cleanup-panel p{
-  margin:0 0 14px;
-  color:#aaa;
-  line-height:1.5;
-  font-size:13px;
-}
-.cleanup-controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.cleanup-controls select{
-  min-height:42px;
-  padding:9px 11px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:7px;
-  background:#0d0d0d;
-  color:#fff;
-}
-.cleanup-button{
-  min-height:42px;
-  padding:10px 16px;
-  border:0;
-  border-radius:7px;
-  background:#8b0000;
-  color:#fff;
-  font-weight:800;
-  cursor:pointer;
-}
-.cleanup-button:hover{background:#b00000}
-.cleanup-button:disabled{opacity:.55;cursor:not-allowed}
-.cleanup-result{
-  margin-top:12px;
-  color:#bbb;
-  font-size:13px;
-  line-height:1.5;
-}
-
 </style>
 </head>
 
 <body>
 
 <header>
-<nav class="nav">
 
-<a class="brand" href="admin.html">
-  <img src="Sirski_Transport_Logo.png" alt="Sirski Transport VTC Logo">
-  <span>Sirski</span> Visitor Management
-</a>
+<img
+  src="Sirski_Transport_Logo.png"
+  alt="Sirski Transport"
+>
 
-<div class="nav-links">
-  <a href="index.html">Gallery</a>
-  <a href="member-management.html">Member Management</a>
-  <a href="member-admin-v2.html">Create Member</a>
-  <a class="active" href="visitor-management.html">Visitors</a>
-  <a href="admin-reset-password.html">Change Admin Password</a>
-  <a class="dark" href="#" id="logoutButton">Logout</a>
-</div>
+<h1>Gallery Administration</h1>
 
-</nav>
+<div>Sirski Transport VTC</div>
+
 </header>
 
-<main>
 
-<h1 class="page-title">Visitor <span>Management</span></h1>
+<div class="container">
 
-<p class="page-subtitle">
-  Named guest visitors and their reactions to approved Sirski Transport member screenshots.
-  Visitor names are visible only to Gallery Administrators.
-</p>
+<div class="topbar">
 
-<div id="status" class="status">Checking administrator access...</div>
+<strong>Screenshot Submissions</strong>
 
-<section class="stats" aria-label="Visitor statistics">
-  <div class="stat">
-    <div class="stat-label">Named Visitors</div>
-    <div class="stat-value" id="visitorCount">—</div>
-  </div>
+<div class="buttons">
 
-  <div class="stat">
-    <div class="stat-label">Guest Reactions</div>
-    <div class="stat-value" id="reactionCount">—</div>
-  </div>
+<a
+  class="link-button back"
+  href="index.html"
+>
+Back to Gallery
+</a>
 
-  <div class="stat">
-    <div class="stat-label">Most Popular</div>
-    <div class="stat-value" id="popularReaction">—</div>
-  </div>
+<a
+  class="link-button"
+  href="member-management.html"
+  style="background:#f5c400;color:#111"
+>
+Member Management
+</a>
 
-  <div class="stat">
-    <div class="stat-label">Top Screenshot</div>
-    <div class="stat-value" id="topScreenshot">—</div>
-  </div>
-</section>
+<a
+  class="link-button"
+  href="member-admin-v2.html"
+  style="background:#151515;color:#f5c400;border:1px solid #554600"
+>
+Create Member
+</a>
 
+<a
+  class="link-button"
+  href="visitor-management.html"
+  style="background:#f5c400;color:#111"
+>
+Visitors
+</a>
 
-<section class="cleanup-panel" id="masterCleanupPanel" style="display:none;">
-  <h2>Master Admin — Visitor Cleanup</h2>
-  <p>
-    Permanently delete old visitor records and their associated guest reactions.
-    This does not delete gallery screenshots, member accounts, or gallery submissions.
-  </p>
-  <div class="cleanup-controls">
-    <select id="cleanupRetention" aria-label="Visitor retention period">
-      <option value="30">Delete visitors older than 30 days</option>
-      <option value="90" selected>Delete visitors older than 90 days</option>
-      <option value="180">Delete visitors older than 180 days</option>
-      <option value="365">Delete visitors older than 1 year</option>
-    </select>
-    <button type="button" class="cleanup-button" id="cleanupButton">
-      DELETE OLD VISITORS
-    </button>
-  </div>
-  <div class="cleanup-result" id="cleanupResult"></div>
-</section>
+<a
+  class="link-button admin-password"
+  href="admin-reset-password.html"
+>
+Change Admin Password
+</a>
 
-<div class="controls">
-  <input
-    id="searchInput"
-    type="search"
-    placeholder="Search visitor or screenshot..."
-    autocomplete="off"
-  >
+<button
+  class="logout"
+  onclick="logout()"
+>
+Logout
+</button>
 
-  <select id="reactionFilter">
-    <option value="">All Reactions</option>
-    <option value="like">❤️ Like</option>
-    <option value="fire">🔥 Fire</option>
-    <option value="truck">🚛 Truck</option>
-    <option value="great">👏 Great</option>
-  </select>
 </div>
 
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-  <th>Visitor</th>
-  <th>Screenshot</th>
-  <th>Submitted By</th>
-  <th>Reaction</th>
-  <th>Date / Time</th>
-</tr>
-</thead>
-<tbody id="visitorRows">
-<tr>
-  <td colspan="5" class="empty">Loading visitor reactions...</td>
-</tr>
-</tbody>
-</table>
 </div>
 
-</main>
 
-<footer>
-  <strong>Sirski Transport</strong>
-  — Driven by Passion. Built on Trust.
-  <br>
-  Independent Project 2 — Visitor Management
-</footer>
+<div id="message"></div>
+
+<div id="loading">
+Checking administrator access...
+</div>
+
+<div id="submissions"></div>
+
+</div>
+
 
 <script>
-const SUPABASE_URL =
-  "https://siedpigixmtmmihdsqpj.supabase.co";
 
-const SUPABASE_KEY =
-  "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+const SUPABASE_URL="https://siedpigixmtmmihdsqpj.supabase.co";
 
-const client =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+const SUPABASE_KEY="sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
 
-const REACTION_INFO = {
-  like:{emoji:'❤️',label:'Like'},
-  fire:{emoji:'🔥',label:'Fire'},
-  truck:{emoji:'🚛',label:'Truck'},
-  great:{emoji:'👏',label:'Great'}
-};
-
-let allRows = [];
+const client=window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 
-const MASTER_ADMIN_EMAIL = "dustdevils29@gmail.com";
-let currentSession = null;
+// =========================================
+// MESSAGE
+// =========================================
 
-function isMasterAdmin(session){
-  return String(session?.user?.email || '').trim().toLowerCase()
-    === MASTER_ADMIN_EMAIL;
+function showMessage(message,type){
+
+ const box=document.getElementById("message");
+
+ box.textContent=message;
+
+ box.className=type||"";
+
+ window.scrollTo({
+   top:0,
+   behavior:"smooth"
+ });
+
 }
 
-function setCleanupVisible(session){
-  const panel = document.getElementById('masterCleanupPanel');
-  if(panel){
-    panel.style.display = isMasterAdmin(session) ? 'block' : 'none';
-  }
+
+// =========================================
+// EXISTING ADMIN VERIFICATION
+// =========================================
+
+async function checkAdmin(){
+
+ const {
+   data:sessionData,
+   error:sessionError
+ }=await client.auth.getSession();
+
+
+ if(sessionError)
+   throw new Error(
+     sessionError.message
+   );
+
+
+ const session=sessionData.session;
+
+
+ if(!session){
+
+   window.location.href="login.html";
+
+   return false;
+ }
+
+
+ const {
+   data:admin,
+   error:adminError
+ }=await client
+   .from("gallery_admins")
+   .select("user_id")
+   .eq(
+     "user_id",
+     session.user.id
+   )
+   .maybeSingle();
+
+
+ if(adminError)
+   throw new Error(
+     "Unable to verify administrator access: "+
+     adminError.message
+   );
+
+
+ if(!admin){
+
+   document.getElementById(
+     "loading"
+   ).textContent=
+     "Access denied. This account is not a gallery administrator.";
+
+   return false;
+ }
+
+
+ return true;
 }
 
+
+// =========================================
+// LOAD SUBMISSIONS
+// =========================================
+
+async function loadSubmissions(){
+
+ const container=
+   document.getElementById(
+     "submissions"
+   );
+
+
+ container.innerHTML="";
+
+
+ document.getElementById(
+   "loading"
+ ).style.display="block";
+
+
+ const {
+   data,
+   error
+ }=await client
+   .from("gallery_submissions")
+   .select("*")
+   .order(
+     "created_at",
+     {ascending:false}
+   );
+
+
+ if(error)
+   throw new Error(
+     "Unable to load submissions: "+
+     error.message
+   );
+
+
+ document.getElementById(
+   "loading"
+ ).style.display="none";
+
+
+ if(!data || data.length===0){
+
+   container.innerHTML=
+     '<div class="empty">No screenshot submissions found.</div>';
+
+   return;
+ }
+
+
+ for(const submission of data){
+
+   let imageUrl="";
+
+
+   try{
+
+     const {
+       data:signedData,
+       error:signedError
+     }=await client
+       .storage
+       .from("gallery-submissions")
+       .createSignedUrl(
+         submission.file_path,
+         3600
+       );
+
+
+     if(
+       !signedError &&
+       signedData
+     ){
+
+       imageUrl=
+         signedData.signedUrl;
+
+     }
+
+   }catch(e){
+
+     console.error(e);
+
+   }
+
+
+   const card=
+     document.createElement("div");
+
+
+   card.className=
+     "submission";
+
+
+   const created=
+     submission.created_at
+       ?new Date(
+          submission.created_at
+        ).toLocaleString()
+       :"-";
+
+
+   const reviewed=
+     submission.reviewed_at
+       ?new Date(
+          submission.reviewed_at
+        ).toLocaleString()
+       :"-";
+
+
+   // =======================================
+   // EXISTING PENDING ACTIONS
+   // =======================================
+
+   let actions="";
+
+
+   if(
+     submission.status==="pending"
+   ){
+
+     actions=`
+       <div class="actions">
+
+         <button
+           class="approve"
+           onclick="updateStatus('${submission.id}','approved')"
+         >
+           Approve
+         </button>
+
+         <button
+           class="reject"
+           onclick="updateStatus('${submission.id}','rejected')"
+         >
+           Reject
+         </button>
+
+       </div>
+     `;
+
+   }
+
+
+   // =======================================
+   // NEW APPROVED DELETE ACTION
+   // =======================================
+
+   if(
+     submission.status==="approved"
+   ){
+
+     actions=`
+       <div class="actions">
+
+         <button
+           class="delete"
+           onclick="deleteApprovedSubmission('${submission.id}')"
+         >
+           Delete
+         </button>
+
+       </div>
+
+       <div class="delete-warning">
+         Deleting this screenshot will remove it from the public gallery.
+       </div>
+     `;
+
+   }
+
+
+   card.innerHTML=`
+
+   <div class="submission-grid">
+
+    <div>
+
+      ${
+        imageUrl
+        ?
+        `<img
+          class="preview"
+          src="${imageUrl}"
+          alt="Submitted screenshot"
+        >`
+        :
+        `<div class="empty">
+          Image preview unavailable
+        </div>`
+      }
+
+    </div>
+
+
+    <div class="details">
+
+     <h2>
+       ${escapeHtml(
+         submission.title||
+         "Untitled"
+       )}
+     </h2>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Driver:
+       </span>
+
+       ${escapeHtml(
+         submission.uploader_name||
+         "-"
+       )}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Description:
+       </span>
+
+       ${escapeHtml(
+         submission.description||
+         "-"
+       )}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Submitted:
+       </span>
+
+       ${created}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Reviewed:
+       </span>
+
+       ${reviewed}
+
+     </div>
+
+
+     <div class="detail">
+
+       <span class="label">
+         Status:
+       </span>
+
+       <span
+         class="status ${submission.status}"
+       >
+         ${escapeHtml(
+           submission.status
+         )}
+       </span>
+
+     </div>
+
+
+     ${actions}
+
+    </div>
+
+   </div>
+
+   `;
+
+
+   container.appendChild(card);
+
+ }
+
+}
+
+
+// =========================================
+// EXISTING APPROVE / REJECT
+// =========================================
+
+async function updateStatus(
+ id,
+ status
+){
+
+ const action=
+   status==="approved"
+   ?"approve"
+   :"reject";
+
+
+ if(
+   !confirm(
+     "Are you sure you want to "+
+     action+
+     " this screenshot?"
+   )
+ )
+   return;
+
+
+ try{
+
+   const {
+     data:submission,
+     error:fetchError
+   }=await client
+     .from("gallery_submissions")
+     .select("*")
+     .eq(
+       "id",
+       id
+     )
+     .single();
+
+
+   if(
+     fetchError||
+     !submission
+   )
+     throw new Error(
+       "Unable to find the submission."
+     );
+
+
+   // =====================================
+   // EXISTING APPROVAL PROCESS
+   // =====================================
+
+   if(status==="approved"){
+
+     const {
+       data:fileData,
+       error:downloadError
+     }=await client
+       .storage
+       .from("gallery-submissions")
+       .download(
+         submission.file_path
+       );
+
+
+     if(downloadError)
+       throw new Error(
+         "Unable to read the submitted image: "+
+         downloadError.message
+       );
+
+
+     const originalFilename=
+       submission.file_path
+         .split("/")
+         .pop();
+
+
+     const approvedPath=
+       "approved/"+
+       submission.id+
+       "-"+
+       originalFilename;
+
+
+     const {
+       error:uploadError
+     }=await client
+       .storage
+       .from("gallery-approved")
+       .upload(
+         approvedPath,
+         fileData,
+         {
+           cacheControl:"31536000",
+           upsert:false,
+           contentType:
+             fileData.type||
+             "image/jpeg"
+         }
+       );
+
+
+     if(uploadError){
+
+       const msg=
+         uploadError.message
+           .toLowerCase();
+
+
+       if(
+         !msg.includes(
+           "already exists"
+         ) &&
+         !msg.includes(
+           "duplicate"
+         )
+       ){
+
+         throw new Error(
+           "Unable to publish the image: "+
+           uploadError.message
+         );
+
+       }
+
+     }
+
+   }
+
+
+   const {
+     error:updateError
+   }=await client
+     .from("gallery_submissions")
+     .update({
+       status:status,
+       reviewed_at:
+         new Date().toISOString()
+     })
+     .eq(
+       "id",
+       id
+     );
+
+
+   if(updateError)
+     throw new Error(
+       "Unable to update submission: "+
+       updateError.message
+     );
+
+
+   showMessage(
+     status==="approved"
+       ?"Screenshot approved and published to the gallery."
+       :"Submission rejected successfully.",
+     "success"
+   );
+
+
+   await loadSubmissions();
+
+
+ }catch(error){
+
+   console.error(error);
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
+ }
+
+}
+
+
+// =========================================
+// NEW: DELETE APPROVED SCREENSHOT
+// =========================================
+
+async function deleteApprovedSubmission(
+ id
+){
+
+ const confirmed=
+   confirm(
+     "Delete this approved screenshot?\n\n"+
+     "This will remove the screenshot from the public gallery and delete its submission record.\n\n"+
+     "This action cannot be undone."
+   );
+
+
+ if(!confirmed)
+   return;
+
+
+ try{
+
+   // =====================================
+   // GET SUBMISSION
+   // =====================================
+
+   const {
+     data:submission,
+     error:fetchError
+   }=await client
+     .from("gallery_submissions")
+     .select("*")
+     .eq(
+       "id",
+       id
+     )
+     .single();
+
+
+   if(
+     fetchError||
+     !submission
+   ){
+
+     throw new Error(
+       "Unable to find the submission."
+     );
+
+   }
+
+
+   // =====================================
+   // ONLY APPROVED ITEMS CAN BE DELETED
+   // =====================================
+
+   if(
+     submission.status!=="approved"
+   ){
+
+     throw new Error(
+       "Only approved screenshots can be deleted."
+     );
+
+   }
+
+
+   // =====================================
+   // BUILD APPROVED STORAGE PATH
+   // =====================================
+
+   const originalFilename=
+     submission.file_path
+       .split("/")
+       .pop();
+
+
+   const approvedPath=
+     "approved/"+
+     submission.id+
+     "-"+
+     originalFilename;
+
+
+   // =====================================
+   // DELETE APPROVED IMAGE
+   // =====================================
+
+   const {
+     error:storageError
+   }=await client
+     .storage
+     .from("gallery-approved")
+     .remove([
+       approvedPath
+     ]);
+
+
+   if(storageError){
+
+     throw new Error(
+       "Unable to delete the approved image: "+
+       storageError.message
+     );
+
+   }
+
+
+   // =====================================
+   // DELETE DATABASE RECORD
+   // =====================================
+
+   const {
+     error:databaseError
+   }=await client
+     .from("gallery_submissions")
+     .delete()
+     .eq(
+       "id",
+       id
+     );
+
+
+   if(databaseError){
+
+     throw new Error(
+       "The image was removed, but the submission record could not be deleted: "+
+       databaseError.message
+     );
+
+   }
+
+
+   // =====================================
+   // SUCCESS
+   // =====================================
+
+   showMessage(
+     "Approved screenshot deleted successfully.",
+     "success"
+   );
+
+
+   await loadSubmissions();
+
+
+ }catch(error){
+
+   console.error(error);
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
+ }
+
+}
+
+
+// =========================================
+// LOGOUT
+// =========================================
+
+async function logout(){
+
+ await client.auth.signOut();
+
+ window.location.href=
+   "login.html";
+
+}
+
+
+// =========================================
+// ESCAPE HTML
+// =========================================
 
 function escapeHtml(value){
-  return String(value ?? '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
+
+ return String(value)
+
+   .replaceAll(
+     "&",
+     "&amp;"
+   )
+
+   .replaceAll(
+     "<",
+     "&lt;"
+   )
+
+   .replaceAll(
+     ">",
+     "&gt;"
+   )
+
+   .replaceAll(
+     '"',
+     "&quot;"
+   )
+
+   .replaceAll(
+     "'",
+     "&#039;"
+   );
+
 }
 
-function formatDate(value){
-  if(!value) return '—';
 
-  return new Intl.DateTimeFormat(
-    'en-GB',
-    {
-      dateStyle:'medium',
-      timeStyle:'short',
-      timeZone:'Asia/Muscat'
-    }
-  ).format(new Date(value));
-}
-
-function setStatus(message,isError=false){
-  const el = document.getElementById('status');
-  el.textContent = message;
-  el.classList.toggle('error',isError);
-}
-
-async function verifyAdmin(){
-  const {
-    data:{session},
-    error:sessionError
-  } = await client.auth.getSession();
-
-  if(sessionError){
-    throw new Error(
-      `Unable to check login: ${sessionError.message}`
-    );
-  }
-
-  if(!session){
-    window.location.href = 'login.html';
-    return null;
-  }
-
-  const {
-    data:admin,
-    error:adminError
-  } = await client
-    .from('gallery_admins')
-    .select('user_id')
-    .eq('user_id',session.user.id)
-    .maybeSingle();
-
-  if(adminError){
-    throw new Error(
-      `Unable to verify administrator access: ${adminError.message}`
-    );
-  }
-
-  if(!admin){
-    window.location.href = 'member-dashboard.html';
-    return null;
-  }
-
-  currentSession = session;
-  setCleanupVisible(session);
-
-  return session;
-}
-
-async function loadVisitorData(){
-
-  const {
-    data:visitors,
-    error:visitorError
-  } = await client
-    .from('gallery_visitors')
-    .select('id,visitor_name,created_at,last_seen_at')
-    .order('created_at',{ascending:false});
-
-  if(visitorError){
-    throw new Error(
-      `Unable to load visitors: ${visitorError.message}`
-    );
-  }
-
-  const {
-    data:reactions,
-    error:reactionError
-  } = await client
-    .from('gallery_reactions')
-    .select('id,submission_id,visitor_id,reaction_type,created_at')
-    .not('visitor_id','is',null)
-    .order('created_at',{ascending:false});
-
-  if(reactionError){
-    throw new Error(
-      `Unable to load guest reactions: ${reactionError.message}`
-    );
-  }
-
-  const {
-    data:submissions,
-    error:submissionError
-  } = await client
-    .from('gallery_submissions')
-    .select('id,title,uploader_name,status');
-
-  if(submissionError){
-    throw new Error(
-      `Unable to load screenshots: ${submissionError.message}`
-    );
-  }
-
-  const visitorMap = new Map(
-    (visitors || []).map(visitor=>[
-      visitor.id,
-      visitor
-    ])
-  );
-
-  const submissionMap = new Map(
-    (submissions || []).map(submission=>[
-      submission.id,
-      submission
-    ])
-  );
-
-  allRows = (reactions || []).map(reaction=>{
-    const visitor = visitorMap.get(
-      reaction.visitor_id
-    );
-
-    const submission = submissionMap.get(
-      reaction.submission_id
-    );
-
-    return {
-      ...reaction,
-      visitor_name:
-        visitor?.visitor_name ||
-        'Unknown Visitor',
-      screenshot_title:
-        submission?.title ||
-        'Unknown Screenshot',
-      uploader_name:
-        submission?.uploader_name ||
-        '—'
-    };
-  });
-
-  updateStats(visitors || [],allRows);
-  renderRows();
-}
-
-function updateStats(visitors,rows){
-
-  document.getElementById('visitorCount')
-    .textContent = visitors.length;
-
-  document.getElementById('reactionCount')
-    .textContent = rows.length;
-
-  const reactionCounts = {
-    like:0,
-    fire:0,
-    truck:0,
-    great:0
-  };
-
-  const screenshotCounts = new Map();
-
-  rows.forEach(row=>{
-    if(reactionCounts[row.reaction_type] !== undefined){
-      reactionCounts[row.reaction_type]++;
-    }
-
-    const key = row.submission_id;
-
-    screenshotCounts.set(
-      key,
-      (screenshotCounts.get(key) || 0) + 1
-    );
-  });
-
-  let popularType = '';
-  let popularCount = 0;
-
-  Object.entries(reactionCounts).forEach(
-    ([type,count])=>{
-      if(count > popularCount){
-        popularType = type;
-        popularCount = count;
-      }
-    }
-  );
-
-  const popularEl =
-    document.getElementById('popularReaction');
-
-  popularEl.textContent =
-    popularType && popularCount
-      ? `${REACTION_INFO[popularType].emoji} ${popularCount}`
-      : '—';
-
-  let topSubmission = '';
-  let topCount = 0;
-
-  screenshotCounts.forEach(
-    (count,id)=>{
-      if(count > topCount){
-        topSubmission = id;
-        topCount = count;
-      }
-    }
-  );
-
-  const topRow =
-    rows.find(row=>row.submission_id === topSubmission);
-
-  const topEl =
-    document.getElementById('topScreenshot');
-
-  topEl.textContent =
-    topRow
-      ? `${topCount}`
-      : '—';
-
-  if(topRow){
-    topEl.title =
-      `${topRow.screenshot_title} (${topCount} guest reactions)`;
-  }
-}
-
-function renderRows(){
-
-  const tbody =
-    document.getElementById('visitorRows');
-
-  const search =
-    document.getElementById('searchInput')
-      .value
-      .trim()
-      .toLowerCase();
-
-  const reactionFilter =
-    document.getElementById('reactionFilter')
-      .value;
-
-  const filtered =
-    allRows.filter(row=>{
-
-      const matchesSearch =
-        !search ||
-        row.visitor_name.toLowerCase().includes(search) ||
-        row.screenshot_title.toLowerCase().includes(search) ||
-        row.uploader_name.toLowerCase().includes(search);
-
-      const matchesReaction =
-        !reactionFilter ||
-        row.reaction_type === reactionFilter;
-
-      return matchesSearch && matchesReaction;
-    });
-
-  if(filtered.length === 0){
-    tbody.innerHTML =
-      '<tr><td colspan="5" class="empty">No visitor reactions found.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML =
-    filtered.map(row=>{
-
-      const info =
-        REACTION_INFO[row.reaction_type] ||
-        {emoji:'',label:row.reaction_type};
-
-      return `
-        <tr>
-          <td><strong>${escapeHtml(row.visitor_name)}</strong></td>
-          <td>${escapeHtml(row.screenshot_title)}</td>
-          <td>${escapeHtml(row.uploader_name)}</td>
-          <td>
-            <span class="reaction-pill">
-              ${info.emoji} ${escapeHtml(info.label)}
-            </span>
-          </td>
-          <td>${escapeHtml(formatDate(row.created_at))}</td>
-        </tr>
-      `;
-    }).join('');
-}
-
-document.getElementById('searchInput')
-  .addEventListener('input',renderRows);
-
-document.getElementById('reactionFilter')
-  .addEventListener('change',renderRows);
-
-
-async function cleanupOldVisitors(){
-  if(!isMasterAdmin(currentSession)){
-    setStatus('Master Admin access is required for visitor cleanup.',true);
-    return;
-  }
-
-  const retentionDays = Number(
-    document.getElementById('cleanupRetention').value
-  );
-
-  const retentionLabel =
-    retentionDays === 365 ? '1 year' : `${retentionDays} days`;
-
-  const cutoff = new Date(
-    Date.now() - retentionDays * 24 * 60 * 60 * 1000
-  ).toISOString();
-
-  const confirmed = confirm(
-    `Delete visitor records older than ${retentionLabel}?\n\n` +
-    `This will permanently delete those visitor records and their associated guest reactions.\n\n` +
-    `Gallery screenshots, member accounts, and gallery submissions will NOT be deleted.\n\n` +
-    `This action cannot be undone.`
-  );
-
-  if(!confirmed) return;
-
-  const button = document.getElementById('cleanupButton');
-  const result = document.getElementById('cleanupResult');
-
-  button.disabled = true;
-  button.textContent = 'CLEANING...';
-  result.textContent = 'Finding old visitor records...';
-
-  try{
-    const {
-      data:oldVisitors,
-      error:visitorSelectError
-    } = await client
-      .from('gallery_visitors')
-      .select('id')
-      .lt('created_at',cutoff);
-
-    if(visitorSelectError){
-      throw new Error(
-        `Unable to find old visitors: ${visitorSelectError.message}`
-      );
-    }
-
-    const visitorIds = (oldVisitors || []).map(row=>row.id);
-
-    if(visitorIds.length === 0){
-      result.textContent =
-        `No visitor records older than ${retentionLabel} were found.`;
-      return;
-    }
-
-    result.textContent =
-      `Found ${visitorIds.length} old visitor record(s). Removing associated reactions...`;
-
-    const {
-      error:reactionDeleteError
-    } = await client
-      .from('gallery_reactions')
-      .delete()
-      .in('visitor_id',visitorIds);
-
-    if(reactionDeleteError){
-      throw new Error(
-        `Unable to delete associated guest reactions: ${reactionDeleteError.message}`
-      );
-    }
-
-    const {
-      error:visitorDeleteError
-    } = await client
-      .from('gallery_visitors')
-      .delete()
-      .in('id',visitorIds);
-
-    if(visitorDeleteError){
-      throw new Error(
-        `Unable to delete old visitor records: ${visitorDeleteError.message}`
-      );
-    }
-
-    result.textContent =
-      `Cleanup complete: ${visitorIds.length} visitor record(s) and their associated guest reactions were deleted.`;
-
-    setStatus(
-      `Visitor cleanup completed successfully for records older than ${retentionLabel}.`
-    );
-
-    await loadVisitorData();
-
-  }catch(error){
-    console.error('Visitor cleanup failed:',error);
-    result.textContent = error?.message || 'Visitor cleanup failed.';
-    setStatus(error?.message || 'Visitor cleanup failed.',true);
-  }finally{
-    button.disabled = false;
-    button.textContent = 'DELETE OLD VISITORS';
-  }
-}
-
-document.getElementById('cleanupButton')
-  .addEventListener('click',cleanupOldVisitors);
-
-document.getElementById('logoutButton')
-  .addEventListener('click',async event=>{
-    event.preventDefault();
-    await client.auth.signOut();
-    window.location.href = 'login.html';
-  });
+// =========================================
+// START
+// =========================================
 
 async function start(){
 
-  try{
-    const session = await verifyAdmin();
+ try{
 
-    if(!session){
-      return;
-    }
+   const isAdmin=
+     await checkAdmin();
 
-    setStatus(
-      `Administrator access verified for ${session.user.email}.`
-    );
 
-    await loadVisitorData();
+   if(!isAdmin)
+     return;
 
-    setStatus(
-      'Visitor management loaded successfully.'
-    );
 
-  }catch(error){
+   await loadSubmissions();
 
-    console.error(error);
 
-    setStatus(
-      error?.message ||
-      'Unable to load visitor management.',
-      true
-    );
-  }
+ }catch(error){
+
+   console.error(error);
+
+
+   document.getElementById(
+     "loading"
+   ).style.display="none";
+
+
+   showMessage(
+     error.message,
+     "error"
+   );
+
+ }
+
 }
 
+
 start();
+
 </script>
 
 </body>
