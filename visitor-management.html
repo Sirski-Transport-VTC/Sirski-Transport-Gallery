@@ -1,767 +1,668 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visitor Management | Sirski Transport Gallery</title>
-<meta name="robots" content="noindex,nofollow">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root{
-  --yellow:#f5c400;
-  --black:#070707;
-  --panel:#171717;
-  --panel2:#111;
-  --line:rgba(245,196,0,.28);
-  --text:#f5f5f5;
-  --muted:#aaa;
-  --green:#31c46c;
-  --red:#e64a4a;
-}
+  <title>Sirski Transport — Member Login</title>
 
-*{box-sizing:border-box}
+  <!-- Project 2 Supabase Browser Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
-body{
-  margin:0;
-  background:
-    radial-gradient(circle at 50% 0%,rgba(245,196,0,.09),transparent 38%),
-    var(--black);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  background:rgba(7,7,7,.96);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(8px);
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.92)),
+        url("truck01.jpeg") center/cover fixed;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-.nav{
-  max-width:1400px;
-  margin:auto;
-  padding:12px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-}
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+    }
 
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  color:white;
-  text-decoration:none;
-  font-weight:900;
-  letter-spacing:1px;
-  text-transform:uppercase;
-}
+    .login-box {
+      background: rgba(15, 15, 15, 0.96);
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 35px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
 
-.brand img{
-  width:40px;
-  height:40px;
-  object-fit:contain;
-}
+    .logo {
+      display: block;
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin: 0 auto 15px;
+    }
 
-.brand span{color:var(--yellow)}
+    h1 {
+      margin: 5px 0;
+      text-align: center;
+      font-size: 28px;
+    }
 
-.nav-links{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 30px;
+    }
 
-.nav-links a{
-  color:#ddd;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:7px;
-  padding:8px 11px;
-  text-decoration:none;
-  font-size:12px;
-  font-weight:700;
-}
+    .section-title {
+      color: #f5c400;
+      font-size: 18px;
+      margin: 0 0 15px;
+    }
 
-.nav-links a:hover,
-.nav-links a.active{
-  color:#070707;
-  background:var(--yellow);
-  border-color:var(--yellow);
-}
+    label {
+      display: block;
+      margin: 15px 0 7px;
+      color: #ddd;
+      font-weight: bold;
+    }
 
-.nav-links a.dark{
-  background:#111;
-}
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
 
-main{
-  max-width:1400px;
-  margin:auto;
-  padding:45px 20px 70px;
-}
+    input:focus {
+      border-color: #f5c400;
+    }
 
-.page-title{
-  margin:0;
-  font-size:clamp(30px,5vw,48px);
-  text-transform:uppercase;
-}
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #f5c400;
+      color: #111;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-.page-title span{color:var(--yellow)}
+    button:hover {
+      background: #ffd633;
+    }
 
-.page-subtitle{
-  margin:10px 0 28px;
-  color:var(--muted);
-  line-height:1.6;
-}
+    .secondary {
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      margin-top: 12px;
+    }
 
-.status{
-  padding:12px 14px;
-  margin-bottom:20px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;
+    .secondary:hover {
+      background: #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .divider {
+      height: 1px;
+      background: #333;
+      margin: 28px 0;
+    }
+
+    #message {
+      margin-top: 18px;
+      padding: 10px;
+      border-radius: 7px;
+      display: none;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .success {
+      background: rgba(40, 167, 69, 0.2);
+      color: #7dff9a;
+      border: 1px solid #2e8b46;
+    }
+
+    .error {
+      background: rgba(220, 53, 69, 0.2);
+      color: #ff8995;
+      border: 1px solid #a52a36;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 25px;
+      color: #f5c400;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back:hover {
+      text-decoration: underline;
+    }
+
+    .small-note {
+      margin-top: 20px;
+      color: #777;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+  
+/* MASTER ADMIN VISITOR CLEANUP */
+.cleanup-panel{
+  margin:22px 0;
+  padding:20px;
   background:var(--panel);
-  color:#bbb;
+  border:1px solid rgba(245,196,0,.28);
+  border-radius:10px;
+}
+.cleanup-panel h2{
+  margin:0 0 8px;
+  color:var(--yellow);
+  font-size:18px;
+}
+.cleanup-panel p{
+  margin:0 0 14px;
+  color:#aaa;
+  line-height:1.5;
   font-size:13px;
 }
-
-.status.error{
-  border-color:rgba(230,74,74,.55);
-  color:#ff8c8c;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:14px;
-  margin-bottom:22px;
-}
-
-.stat{
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-  padding:18px;
-}
-
-.stat-label{
-  color:#999;
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-.stat-value{
-  margin-top:8px;
-  color:var(--yellow);
-  font-size:28px;
-  font-weight:900;
-}
-
-.controls{
+.cleanup-controls{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
-  margin-bottom:18px;
+  align-items:center;
 }
-
-.controls input,
-.controls select{
-  min-height:40px;
+.cleanup-controls select{
+  min-height:42px;
   padding:9px 11px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:7px;
   background:#0d0d0d;
   color:#fff;
-  outline:none;
 }
-
-.controls input{
-  flex:1 1 280px;
-}
-
-.controls select{
-  min-width:160px;
-}
-
-.controls input:focus,
-.controls select:focus{
-  border-color:var(--yellow);
-}
-
-.table-wrap{
-  overflow:auto;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:800px;
-}
-
-th,
-td{
-  padding:12px 13px;
-  text-align:left;
-  border-bottom:1px solid rgba(255,255,255,.07);
-  vertical-align:top;
-}
-
-th{
-  color:var(--yellow);
-  background:#101010;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  position:sticky;
-  top:0;
-}
-
-td{
-  color:#ddd;
-  font-size:13px;
-}
-
-tr:last-child td{border-bottom:0}
-
-.reaction-pill{
-  display:inline-block;
-  padding:5px 8px;
-  border-radius:999px;
-  background:#252525;
+.cleanup-button{
+  min-height:42px;
+  padding:10px 16px;
+  border:0;
+  border-radius:7px;
+  background:#8b0000;
   color:#fff;
-  font-size:12px;
   font-weight:800;
+  cursor:pointer;
 }
-
-.empty{
-  padding:35px;
-  text-align:center;
-  color:#888;
+.cleanup-button:hover{
+  background:#b00000;
 }
-
-footer{
-  border-top:1px solid rgba(255,255,255,.08);
-  text-align:center;
-  padding:28px 20px 40px;
-  color:#777;
+.cleanup-button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.cleanup-result{
+  margin-top:12px;
+  color:#bbb;
   font-size:13px;
+  line-height:1.5;
 }
 
-footer strong{color:var(--yellow)}
-
-@media(max-width:900px){
-  .stats{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-}
-
-@media(max-width:700px){
-  .nav{
-    align-items:flex-start;
-  }
-
-  .brand{
-    font-size:12px;
-  }
-
-  .brand img{
-    width:34px;
-    height:34px;
-  }
-
-  .nav-links a{
-    font-size:10px;
-    padding:7px 8px;
-  }
-
-  main{
-    padding:35px 14px 60px;
-  }
-}
-
-@media(max-width:500px){
-  .stats{
-    grid-template-columns:1fr 1fr;
-    gap:9px;
-  }
-
-  .stat{
-    padding:13px;
-  }
-
-  .stat-value{
-    font-size:22px;
-  }
-}
 </style>
 </head>
 
 <body>
 
-<header>
-<nav class="nav">
+<div class="login-container">
 
-<a class="brand" href="admin.html">
-  <img src="Sirski_Transport_Logo.png" alt="Sirski Transport VTC Logo">
-  <span>Sirski</span> Visitor Management
-</a>
+  <div class="login-box">
 
-<div class="nav-links">
-  <a href="index.html">Gallery</a>
-  <a href="member-management.html">Member Management</a>
-  <a href="member-admin-v2.html">Create Member</a>
-  <a class="active" href="visitor-management.html">Visitors</a>
-  <a href="admin-reset-password.html">Change Admin Password</a>
-  <a class="dark" href="#" id="logoutButton">Logout</a>
+    <img
+      src="Sirski_Transport_Logo.png"
+      alt="Sirski Transport Logo"
+      class="logo"
+    >
+
+    <h1>Sirski Transport VTC</h1>
+
+    <div class="subtitle">
+      Project 2 — Member Gallery
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <div id="loginSection">
+
+      <h2 class="section-title">Member Login</h2>
+
+      <form id="loginForm">
+
+        <label for="loginEmail">
+          Sirski Transport Recovery Email
+        </label>
+
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="Enter your recovery email"
+          required
+        >
+
+        <label for="loginPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Enter your password"
+          required
+        >
+
+        <button type="submit">
+          Member Login
+        </button>
+
+      </form>
+
+
+    </div>
+
+
+    <div id="message"></div>
+
+    <div class="divider"></div>
+
+    <a href="index.html" class="back">
+      ← Back to Gallery
+    </a>
+
+    <div class="small-note">
+      Sirski Transport — Driven by Passion. Built on Trust.
+      <br>
+      Independent Project 2 — Standalone Truck Gallery
+    </div>
+
+  </div>
+
 </div>
 
-</nav>
-</header>
-
-<main>
-
-<h1 class="page-title">Visitor <span>Management</span></h1>
-
-<p class="page-subtitle">
-  Named guest visitors and their reactions to approved Sirski Transport member screenshots.
-  Visitor names are visible only to Gallery Administrators.
-</p>
-
-<div id="status" class="status">Checking administrator access...</div>
-
-<section class="stats" aria-label="Visitor statistics">
-  <div class="stat">
-    <div class="stat-label">Named Visitors</div>
-    <div class="stat-value" id="visitorCount">—</div>
-  </div>
-
-  <div class="stat">
-    <div class="stat-label">Guest Reactions</div>
-    <div class="stat-value" id="reactionCount">—</div>
-  </div>
-
-  <div class="stat">
-    <div class="stat-label">Most Popular</div>
-    <div class="stat-value" id="popularReaction">—</div>
-  </div>
-
-  <div class="stat">
-    <div class="stat-label">Top Screenshot</div>
-    <div class="stat-value" id="topScreenshot">—</div>
-  </div>
-</section>
-
-<div class="controls">
-  <input
-    id="searchInput"
-    type="search"
-    placeholder="Search visitor or screenshot..."
-    autocomplete="off"
-  >
-
-  <select id="reactionFilter">
-    <option value="">All Reactions</option>
-    <option value="like">❤️ Like</option>
-    <option value="fire">🔥 Fire</option>
-    <option value="truck">🚛 Truck</option>
-    <option value="great">👏 Great</option>
-  </select>
-</div>
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-  <th>Visitor</th>
-  <th>Screenshot</th>
-  <th>Submitted By</th>
-  <th>Reaction</th>
-  <th>Date / Time</th>
-</tr>
-</thead>
-<tbody id="visitorRows">
-<tr>
-  <td colspan="5" class="empty">Loading visitor reactions...</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-</main>
-
-<footer>
-  <strong>Sirski Transport</strong>
-  — Driven by Passion. Built on Trust.
-  <br>
-  Independent Project 2 — Visitor Management
-</footer>
 
 <script>
-const SUPABASE_URL =
-  "https://siedpigixmtmmihdsqpj.supabase.co";
 
-const SUPABASE_KEY =
-  "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
+  // =========================================
+  // PROJECT 2 SUPABASE
+  // =========================================
 
-const client =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+  const SUPABASE_URL =
+    "https://siedpigixmtmmihdsqpj.supabase.co";
 
-const REACTION_INFO = {
-  like:{emoji:'❤️',label:'Like'},
-  fire:{emoji:'🔥',label:'Fire'},
-  truck:{emoji:'🚛',label:'Truck'},
-  great:{emoji:'👏',label:'Great'}
-};
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_OgFfAMNztlZ2cJwALHTfPQ_XxqHi3er";
 
-let allRows = [];
 
-function escapeHtml(value){
-  return String(value ?? '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
-}
+  const { createClient } = supabase;
 
-function formatDate(value){
-  if(!value) return '—';
 
-  return new Intl.DateTimeFormat(
-    'en-GB',
-    {
-      dateStyle:'medium',
-      timeStyle:'short',
-      timeZone:'Asia/Muscat'
-    }
-  ).format(new Date(value));
-}
-
-function setStatus(message,isError=false){
-  const el = document.getElementById('status');
-  el.textContent = message;
-  el.classList.toggle('error',isError);
-}
-
-async function verifyAdmin(){
-  const {
-    data:{session},
-    error:sessionError
-  } = await client.auth.getSession();
-
-  if(sessionError){
-    throw new Error(
-      `Unable to check login: ${sessionError.message}`
+  const client =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
     );
+
+
+  // =========================================
+  // PAGE ELEMENTS
+  // =========================================
+
+  const loginSection =
+    document.getElementById("loginSection");
+
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const message =
+    document.getElementById("message");
+
+
+  // =========================================
+  // MESSAGE FUNCTIONS
+  // =========================================
+
+  function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className = type;
+
+    message.style.display = "block";
+
   }
 
-  if(!session){
-    window.location.href = 'login.html';
-    return null;
+
+  function clearMessage() {
+
+    message.textContent = "";
+
+    message.style.display = "none";
+
+    message.className = "";
+
   }
 
-  const {
-    data:admin,
-    error:adminError
-  } = await client
-    .from('gallery_admins')
-    .select('user_id')
-    .eq('user_id',session.user.id)
-    .maybeSingle();
 
-  if(adminError){
-    throw new Error(
-      `Unable to verify administrator access: ${adminError.message}`
-    );
-  }
+  // =========================================
+  // CHECK EXISTING SESSION
+  // =========================================
+  //
+  // If the user is already logged in:
+  //
+  // ADMIN
+  // → admin.html
+  //
+  // NORMAL MEMBER
+  // → member-dashboard.html
+  //
+  // If there is no session:
+  // stay on normal login page.
+  // =========================================
 
-  if(!admin){
-    window.location.href = 'member-dashboard.html';
-    return null;
-  }
+  async function checkExistingSession() {
 
-  return session;
-}
+    try {
 
-async function loadVisitorData(){
+      const {
+        data: {
+          session
+        },
+        error
+      } =
+        await client.auth.getSession();
 
-  const {
-    data:visitors,
-    error:visitorError
-  } = await client
-    .from('gallery_visitors')
-    .select('id,visitor_name,created_at,last_seen_at')
-    .order('created_at',{ascending:false});
 
-  if(visitorError){
-    throw new Error(
-      `Unable to load visitors: ${visitorError.message}`
-    );
-  }
+      if (error) {
 
-  const {
-    data:reactions,
-    error:reactionError
-  } = await client
-    .from('gallery_reactions')
-    .select('id,submission_id,visitor_id,reaction_type,created_at')
-    .not('visitor_id','is',null)
-    .order('created_at',{ascending:false});
+        console.error(
+          "Unable to check existing session:",
+          error
+        );
 
-  if(reactionError){
-    throw new Error(
-      `Unable to load guest reactions: ${reactionError.message}`
-    );
-  }
-
-  const {
-    data:submissions,
-    error:submissionError
-  } = await client
-    .from('gallery_submissions')
-    .select('id,title,uploader_name,status');
-
-  if(submissionError){
-    throw new Error(
-      `Unable to load screenshots: ${submissionError.message}`
-    );
-  }
-
-  const visitorMap = new Map(
-    (visitors || []).map(visitor=>[
-      visitor.id,
-      visitor
-    ])
-  );
-
-  const submissionMap = new Map(
-    (submissions || []).map(submission=>[
-      submission.id,
-      submission
-    ])
-  );
-
-  allRows = (reactions || []).map(reaction=>{
-    const visitor = visitorMap.get(
-      reaction.visitor_id
-    );
-
-    const submission = submissionMap.get(
-      reaction.submission_id
-    );
-
-    return {
-      ...reaction,
-      visitor_name:
-        visitor?.visitor_name ||
-        'Unknown Visitor',
-      screenshot_title:
-        submission?.title ||
-        'Unknown Screenshot',
-      uploader_name:
-        submission?.uploader_name ||
-        '—'
-    };
-  });
-
-  updateStats(visitors || [],allRows);
-  renderRows();
-}
-
-function updateStats(visitors,rows){
-
-  document.getElementById('visitorCount')
-    .textContent = visitors.length;
-
-  document.getElementById('reactionCount')
-    .textContent = rows.length;
-
-  const reactionCounts = {
-    like:0,
-    fire:0,
-    truck:0,
-    great:0
-  };
-
-  const screenshotCounts = new Map();
-
-  rows.forEach(row=>{
-    if(reactionCounts[row.reaction_type] !== undefined){
-      reactionCounts[row.reaction_type]++;
-    }
-
-    const key = row.submission_id;
-
-    screenshotCounts.set(
-      key,
-      (screenshotCounts.get(key) || 0) + 1
-    );
-  });
-
-  let popularType = '';
-  let popularCount = 0;
-
-  Object.entries(reactionCounts).forEach(
-    ([type,count])=>{
-      if(count > popularCount){
-        popularType = type;
-        popularCount = count;
+        return;
       }
-    }
-  );
 
-  const popularEl =
-    document.getElementById('popularReaction');
 
-  popularEl.textContent =
-    popularType && popularCount
-      ? `${REACTION_INFO[popularType].emoji} ${popularCount}`
-      : '—';
+      // No existing session.
+      // Keep normal login screen.
 
-  let topSubmission = '';
-  let topCount = 0;
+      if (!session || !session.user) {
 
-  screenshotCounts.forEach(
-    (count,id)=>{
-      if(count > topCount){
-        topSubmission = id;
-        topCount = count;
+        return;
       }
+
+
+      // =========================================
+      // CHECK PROJECT 2 ADMIN TABLE
+      // =========================================
+
+      const {
+        data: admin,
+        error: adminError
+      } =
+        await client
+          .from("gallery_admins")
+          .select("user_id")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+
+      if (adminError) {
+
+        console.error(
+          "Gallery admin check failed:",
+          adminError
+        );
+
+        return;
+      }
+
+
+      // =========================================
+      // EXISTING ADMIN SESSION
+      // =========================================
+
+      if (admin) {
+
+        showMessage(
+          "Administrator session found. Opening Gallery Administration...",
+          "success"
+        );
+
+
+        setTimeout(
+          function() {
+
+            window.location.href =
+              "admin.html";
+
+          },
+          500
+        );
+
+
+        return;
+      }
+
+
+      // =========================================
+      // EXISTING NORMAL MEMBER SESSION
+      // =========================================
+
+      showMessage(
+        "Member session found. Opening member area...",
+        "success"
+      );
+
+
+      setTimeout(
+        function() {
+
+          window.location.href =
+            "member-dashboard.html";
+
+        },
+        500
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Existing session check failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  // =========================================
+  // MEMBER LOGIN
+  // =========================================
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      clearMessage();
+
+
+      const email =
+        document
+          .getElementById("loginEmail")
+          .value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById("loginPassword")
+          .value;
+
+
+      showMessage(
+        "Signing in...",
+        "success"
+      );
+
+
+      const {
+        data,
+        error
+      } =
+        await client.auth.signInWithPassword({
+
+          email: email,
+
+          password: password
+
+        });
+
+
+      if (error) {
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!data || !data.user) {
+
+        showMessage(
+          "Login succeeded, but the user account could not be identified.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      // =========================================
+      // CHECK IF LOGGED-IN USER IS ADMIN
+      // =========================================
+
+      const {
+        data: admin,
+        error: adminError
+      } =
+        await client
+          .from("gallery_admins")
+          .select("user_id")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+
+
+      if (adminError) {
+
+        console.error(
+          "Gallery admin check failed:",
+          adminError
+        );
+
+
+        showMessage(
+          "Login successful, but administrator access could not be verified. Please try again.",
+          "error"
+        );
+
+
+        await client.auth.signOut();
+
+        return;
+      }
+
+
+      // =========================================
+      // ADMIN → ADMIN DASHBOARD
+      // =========================================
+
+      if (admin) {
+
+        showMessage(
+          "Administrator login successful. Opening Gallery Administration...",
+          "success"
+        );
+
+
+        setTimeout(
+          function() {
+
+            window.location.href =
+              "admin.html";
+
+          },
+          700
+        );
+
+
+        return;
+      }
+
+
+      // =========================================
+      // NORMAL MEMBER → MEMBER DASHBOARD
+      // =========================================
+
+      showMessage(
+        "Login successful. Opening member area...",
+        "success"
+      );
+
+
+      setTimeout(
+        function() {
+
+          window.location.href =
+            "member-dashboard.html";
+
+        },
+        1000
+      );
+
     }
   );
 
-  const topRow =
-    rows.find(row=>row.submission_id === topSubmission);
 
-  const topEl =
-    document.getElementById('topScreenshot');
+  // =========================================
+  // START
+  // =========================================
 
-  topEl.textContent =
-    topRow
-      ? `${topCount}`
-      : '—';
+  checkExistingSession();
 
-  if(topRow){
-    topEl.title =
-      `${topRow.screenshot_title} (${topCount} guest reactions)`;
-  }
-}
-
-function renderRows(){
-
-  const tbody =
-    document.getElementById('visitorRows');
-
-  const search =
-    document.getElementById('searchInput')
-      .value
-      .trim()
-      .toLowerCase();
-
-  const reactionFilter =
-    document.getElementById('reactionFilter')
-      .value;
-
-  const filtered =
-    allRows.filter(row=>{
-
-      const matchesSearch =
-        !search ||
-        row.visitor_name.toLowerCase().includes(search) ||
-        row.screenshot_title.toLowerCase().includes(search) ||
-        row.uploader_name.toLowerCase().includes(search);
-
-      const matchesReaction =
-        !reactionFilter ||
-        row.reaction_type === reactionFilter;
-
-      return matchesSearch && matchesReaction;
-    });
-
-  if(filtered.length === 0){
-    tbody.innerHTML =
-      '<tr><td colspan="5" class="empty">No visitor reactions found.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML =
-    filtered.map(row=>{
-
-      const info =
-        REACTION_INFO[row.reaction_type] ||
-        {emoji:'',label:row.reaction_type};
-
-      return `
-        <tr>
-          <td><strong>${escapeHtml(row.visitor_name)}</strong></td>
-          <td>${escapeHtml(row.screenshot_title)}</td>
-          <td>${escapeHtml(row.uploader_name)}</td>
-          <td>
-            <span class="reaction-pill">
-              ${info.emoji} ${escapeHtml(info.label)}
-            </span>
-          </td>
-          <td>${escapeHtml(formatDate(row.created_at))}</td>
-        </tr>
-      `;
-    }).join('');
-}
-
-document.getElementById('searchInput')
-  .addEventListener('input',renderRows);
-
-document.getElementById('reactionFilter')
-  .addEventListener('change',renderRows);
-
-document.getElementById('logoutButton')
-  .addEventListener('click',async event=>{
-    event.preventDefault();
-    await client.auth.signOut();
-    window.location.href = 'login.html';
-  });
-
-async function start(){
-
-  try{
-    const session = await verifyAdmin();
-
-    if(!session){
-      return;
-    }
-
-    setStatus(
-      `Administrator access verified for ${session.user.email}.`
-    );
-
-    await loadVisitorData();
-
-    setStatus(
-      'Visitor management loaded successfully.'
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    setStatus(
-      error?.message ||
-      'Unable to load visitor management.',
-      true
-    );
-  }
-}
-
-start();
 </script>
 
 </body>
