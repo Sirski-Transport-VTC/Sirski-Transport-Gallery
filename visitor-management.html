@@ -300,6 +300,30 @@ footer strong{color:var(--yellow)}
     font-size:22px;
   }
 }
+
+/* Master Admin Cleanup */
+.cleanup-panel{
+  margin:24px 0;
+  padding:20px;
+  border:1px solid #f5c400;
+  border-radius:12px;
+  background:#111;
+}
+.cleanup-panel h2{margin:0 0 8px;color:#f5c400}
+.cleanup-panel p{margin:0 0 14px;color:#ddd}
+.cleanup-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cleanup-controls select,.cleanup-controls button{
+  padding:10px 14px;border-radius:8px;border:1px solid #555;
+  font:inherit;
+}
+.cleanup-controls select{background:#222;color:#fff}
+.cleanup-controls button{
+  background:#f5c400;color:#111;border:0;font-weight:700;cursor:pointer;
+}
+.cleanup-controls button:disabled{opacity:.5;cursor:not-allowed}
+.cleanup-status{margin-top:12px;min-height:20px;color:#ddd}
+.cleanup-warning{color:#ffcc00;font-size:.9rem;margin-top:10px}
+
 </style>
 </head>
 
@@ -762,7 +786,110 @@ async function start(){
 }
 
 start();
+
+
+/* =========================================================
+   MASTER ADMIN VISITOR CLEANUP
+   Additive only — existing visitor loading/rendering is untouched.
+   ========================================================= */
+const MASTER_ADMIN_EMAIL = 'dustdevils29@gmail.com';
+
+async function setupMasterAdminCleanup(){
+  const panel = document.getElementById('masterCleanupPanel');
+  const button = document.getElementById('cleanupButton');
+  const ageSelect = document.getElementById('cleanupAge');
+  const status = document.getElementById('cleanupStatus');
+
+  if(!panel || !button || !ageSelect || !status) return;
+
+  try{
+    const {data:{session}, error:sessionError} = await client.auth.getSession();
+    if(sessionError || !session || !session.user) return;
+
+    const email = (session.user.email || '').toLowerCase().trim();
+
+    // Only the specified Master Admin can see/use this control.
+    if(email !== MASTER_ADMIN_EMAIL.toLowerCase()){
+      return;
+    }
+
+    panel.style.display = 'block';
+
+    button.addEventListener('click', async ()=>{
+      const days = Number(ageSelect.value);
+      const label = ageSelect.options[ageSelect.selectedIndex].text;
+
+      const confirmed = window.confirm(
+        'MASTER ADMIN CLEANUP\\n\\n' +
+        'You are about to permanently delete visitor records ' +
+        label.toLowerCase() + '.\\n\\n' +
+        'Their associated visitor reactions will also be deleted.\\n' +
+        'Gallery images, submissions, and member accounts will NOT be deleted.\\n\\n' +
+        'Continue?'
+      );
+
+      if(!confirmed) return;
+
+      status.textContent = 'Checking cleanup permission...';
+      button.disabled = true;
+
+      try{
+        /*
+         * Safety check: the public client key may be subject to RLS.
+         * We deliberately do not perform destructive client-side deletes here.
+         * A secure server-side/Edge Function should perform the actual cleanup
+         * atomically once its endpoint is provided/configured.
+         */
+        const {data:{session:activeSession}, error:activeSessionError} =
+          await client.auth.getSession();
+
+        if(activeSessionError || !activeSession){
+          throw new Error('Your admin session has expired. Please log in again.');
+        }
+
+        if((activeSession.user.email || '').toLowerCase().trim() !==
+           MASTER_ADMIN_EMAIL.toLowerCase()){
+          throw new Error('Master Admin authorization is required.');
+        }
+
+        status.innerHTML =
+          '<span style="color:#f5c400;">Cleanup is ready, but no destructive delete was performed.</span>' +
+          '<br>Secure server-side cleanup must be connected before records can be permanently deleted.';
+      }catch(err){
+        status.textContent = err.message || 'Cleanup could not be started.';
+      }finally{
+        button.disabled = false;
+      }
+    });
+  }catch(err){
+    // Do not interfere with the existing visitor page if cleanup setup fails.
+    console.error('Master Admin cleanup setup:', err);
+  }
+}
+
 </script>
 
+
+<section id="masterCleanupPanel" class="cleanup-panel" style="display:none;">
+  <h2>Master Admin — Visitor Cleanup</h2>
+  <p>Remove old visitor records and their associated reactions. Gallery submissions, images, and member accounts are not affected.</p>
+
+  <div class="cleanup-controls">
+    <select id="cleanupAge">
+      <option value="30">Older than 30 days</option>
+      <option value="90" selected>Older than 90 days</option>
+      <option value="180">Older than 180 days</option>
+      <option value="365">Older than 1 year</option>
+    </select>
+    <button id="cleanupButton" type="button">Clean Up Old Visitors</button>
+  </div>
+
+  <div id="cleanupStatus" class="cleanup-status"></div>
+  <div class="cleanup-warning">
+    This action is permanent. Only the Master Admin account can use it.
+  </div>
+</section>
+
+<script>setupMasterAdminCleanup();</script>
 </body>
 </html>
