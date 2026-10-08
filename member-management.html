@@ -131,6 +131,15 @@
   background:#1b75ce
 }
 
+.edit-name-button{
+  background:#5b3aa8;
+  color:#fff
+}
+
+.edit-name-button:hover{
+  background:#744fc6
+}
+
 .toggle-button{
   background:#8a5a00;
   color:#fff
@@ -268,6 +277,23 @@
   margin-top:12px;
   font-size:13px;
   color:#ffb4b4
+}
+
+/* =========================================
+   EDIT NAME MODAL
+   ========================================= */
+
+.edit-name-current{
+  background:#0b0b0b;
+  border:1px solid #292929;
+  border-radius:10px;
+  padding:13px;
+  margin:15px 0;
+  color:#ddd
+}
+
+.edit-name-current strong{
+  color:#f5c400
 }
 
 /* =========================================
@@ -502,6 +528,65 @@
         id="resetConfirm"
       >
         Reset Password
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================
+     EDIT NAME MODAL
+========================================= -->
+
+<div
+  id="editNameModal"
+  class="modal-overlay"
+>
+
+  <div class="modal">
+
+    <h2>Edit Member Name</h2>
+
+    <div class="edit-name-current">
+      <strong id="editNameEmail">-</strong>
+    </div>
+
+    <label for="editNameInput">
+      Member Name
+    </label>
+
+    <input
+      id="editNameInput"
+      type="text"
+      maxlength="100"
+      autocomplete="off"
+      placeholder="Enter member name"
+    >
+
+    <div
+      id="editNameMessage"
+      class="modal-message"
+    ></div>
+
+    <div class="modal-buttons">
+
+      <button
+        type="button"
+        class="action-button modal-cancel"
+        id="editNameCancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="action-button modal-confirm"
+        id="editNameConfirm"
+      >
+        Save Name
       </button>
 
     </div>
@@ -989,6 +1074,19 @@ async function loadMembers(){
           </button>
 
 
+          <button
+            type="button"
+            class="action-button edit-name-button"
+            onclick="openEditNameModal(
+              '${escapeJs(member.id)}',
+              '${escapeJs(member.sirski_name || "Unnamed Member")}',
+              '${escapeJs(member.email || "-")}'
+            )"
+          >
+            ✏️ Edit Name
+          </button>
+
+
           ${
             confirmed
               ? `
@@ -1078,6 +1176,176 @@ function escapeJs(value){
 /* =========================================
    RESET PASSWORD MODAL
 ========================================= */
+
+function openEditNameModal(
+  id,
+  name,
+  email
+){
+
+  selectedMember = {
+    id,
+    name,
+    email
+  };
+
+  document.getElementById(
+    "editNameEmail"
+  ).textContent = email;
+
+  document.getElementById(
+    "editNameInput"
+  ).value =
+    name === "Unnamed Member" ? "" : name;
+
+  document.getElementById(
+    "editNameMessage"
+  ).textContent = "";
+
+  document.getElementById(
+    "editNameModal"
+  ).classList.add("show");
+
+  setTimeout(() => {
+
+    document.getElementById(
+      "editNameInput"
+    ).focus();
+
+  },100);
+
+}
+
+
+function closeEditNameModal(){
+
+  document.getElementById(
+    "editNameModal"
+  ).classList.remove("show");
+
+  selectedMember = null;
+
+}
+
+
+async function updateMemberName(){
+
+  if(!selectedMember)
+    return;
+
+  const input =
+    document.getElementById(
+      "editNameInput"
+    );
+
+  const modalMessage =
+    document.getElementById(
+      "editNameMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "editNameConfirm"
+    );
+
+  const newName =
+    input.value.trim();
+
+  modalMessage.textContent = "";
+
+  if(!newName){
+
+    modalMessage.textContent =
+      "Please enter a member name.";
+
+    input.focus();
+    return;
+
+  }
+
+  if(newName.length > 100){
+
+    modalMessage.textContent =
+      "Member name must be 100 characters or fewer.";
+
+    input.focus();
+    return;
+
+  }
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await client.functions.invoke(
+        "admin-update-member-name",
+        {
+          body:{
+            member_id:
+              selectedMember.id,
+
+            sirski_name:
+              newName
+          }
+        }
+      );
+
+    if(error){
+
+      const errorText =
+        await getFunctionError(
+          error,
+          data
+        );
+
+      throw new Error(errorText);
+
+    }
+
+    if(!data?.ok){
+
+      throw new Error(
+        data?.error ||
+        "Unable to update member name."
+      );
+
+    }
+
+    const savedName = newName;
+
+    closeEditNameModal();
+
+    showMessage(
+      "Member name was updated to " +
+      savedName +
+      ".",
+      "success"
+    );
+
+    await loadMembers();
+
+  }catch(error){
+
+    console.error(error);
+
+    modalMessage.textContent =
+      error.message ||
+      "Unable to update member name.";
+
+  }finally{
+
+    button.disabled = false;
+    button.textContent = "Save Name";
+
+  }
+
+}
+
 
 function openResetModal(
   id,
@@ -1565,6 +1833,41 @@ async function deleteMember(){
 
 document
   .getElementById(
+    "editNameCancel"
+  )
+  .addEventListener(
+    "click",
+    closeEditNameModal
+  );
+
+
+document
+  .getElementById(
+    "editNameConfirm"
+  )
+  .addEventListener(
+    "click",
+    updateMemberName
+  );
+
+
+document
+  .getElementById(
+    "editNameModal"
+  )
+  .addEventListener(
+    "click",
+    function(event){
+
+      if(event.target === this)
+        closeEditNameModal();
+
+    }
+  );
+
+
+document
+  .getElementById(
     "refreshButton"
   )
   .addEventListener(
@@ -1660,6 +1963,7 @@ document.addEventListener(
 
 
     closeResetModal();
+    closeEditNameModal();
     closeDeleteModal();
 
   }
